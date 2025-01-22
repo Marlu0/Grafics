@@ -30,20 +30,55 @@ Application::~Application()
 {
 }
 
-void Application::ToolbarInit(void){
-    framebuffer.DrawRect(0, 0, window_width, 32, Color::GRAY, 1, false, Color::GRAY);
-    framebuffer.DrawImage("../res/images/pencil.png",false, 0, 0);
-    framebuffer.DrawImage("../res/images/eraser.png",false, 32, 0);
-    framebuffer.DrawImage("../res/images/line.png",false, 64, 0);
-    framebuffer.DrawImage("../res/images/rectangle.png",false, 96, 0);
-    framebuffer.DrawImage("../res/images/triangle.png",false, 128, 0);
-    framebuffer.DrawImage("../res/images/circle.png",false, 160, 0);
+void Application::InitButtons(void) {
+    pencil.image.LoadPNG("../res/images/pencil.png");
+    eraser.image.LoadPNG("../res/images/eraser.png");
+    line.image.LoadPNG("../res/images/line.png");
+    rectangle.image.LoadPNG("../res/images/rectangle.png");
+    triangle.image.LoadPNG("../res/images/triangle.png");
+    circle.image.LoadPNG("../res/images/circle.png");
+    animation.image.LoadPNG("../res/images/animation.png");
+    loadimage.image.LoadPNG("../res/images/load.png");
+    saveimage.image.LoadPNG("../res/images/save.png");
+    fill.image.LoadPNG("../res/images/fill.png");
+    newImage.image.LoadPNG("../res/images/clear.png");
+    black.image.LoadPNG("../res/images/black.png");
+    white.image.LoadPNG("../res/images/white.png");
+    red.image.LoadPNG("../res/images/red.png");
+    blue.image.LoadPNG("../res/images/blue.png");
+    yellow.image.LoadPNG("../res/images/yellow.png");
+    pink.image.LoadPNG("../res/images/purple.png");
+    green.image.LoadPNG("../res/images/green.png");
+}
+
+void Application::ToolbarInit(void) {
+    framebuffer.DrawRect(0, 0, window_width, 32, Color::GRAY, 1, true, Color::GRAY);
+
+    // Draw each button image
+    framebuffer.DrawImage("../res/images/pencil.png", false, 0, 0);
+    framebuffer.DrawImage("../res/images/eraser.png", false, 32, 0);
+    framebuffer.DrawImage("../res/images/line.png", false, 64, 0);
+    framebuffer.DrawImage("../res/images/rectangle.png", false, 96, 0);
+    framebuffer.DrawImage("../res/images/triangle.png", false, 128, 0);
+    framebuffer.DrawImage("../res/images/circle.png", false, 160, 0);
+    framebuffer.DrawImage("../res/images/animation.png", false, 192, 0);
+    framebuffer.DrawImage("../res/images/load.png", false, 224, 0);
+    framebuffer.DrawImage("../res/images/save.png", false, 256, 0);
+    framebuffer.DrawImage("../res/images/fill.png", false, 288, 0);
+    framebuffer.DrawImage("../res/images/clear.png", false, 320, 0);
+    framebuffer.DrawImage("../res/images/black.png", false, 352, 0);
+    framebuffer.DrawImage("../res/images/white.png", false, 384, 0);
+    framebuffer.DrawImage("../res/images/red.png", false, 416, 0);
+    framebuffer.DrawImage("../res/images/blue.png", false, 448, 0);
+    framebuffer.DrawImage("../res/images/yellow.png", false, 480, 0);
+    framebuffer.DrawImage("../res/images/pink.png", false, 512, 0);
+    framebuffer.DrawImage("../res/images/green.png", false, 544, 0);
 }
 
 void Application::Init(void)
 {
     std::cout << "Initiating app..." << std::endl;
-    
+    InitButtons();
     ToolbarInit();
 }
 

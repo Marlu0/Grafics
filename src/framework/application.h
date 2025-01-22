@@ -26,7 +26,7 @@ public:
     int mouse_state; // Tells which buttons are pressed
     Vector2 mouse_position; // Last mouse position
     Vector2 mouse_delta; // Mouse movement in the last frame
-
+    
     
     // Paint tool
      // doa struct later here
@@ -49,7 +49,28 @@ public:
     
     void PaintTool( SDL_MouseButtonEvent event);
     
+    // Buttons
     
+    void InitButtons(void);
+    Button pencil;
+    Button eraser;
+    Button line;
+    Button rectangle;
+    Button triangle;
+    Button circle;
+    Button animation;
+    Button loadimage;
+    Button saveimage;
+    Button fill;
+    Button newImage;
+    Button black;
+    Button white;
+    Button red;
+    Button blue;
+    Button yellow;
+    Button pink;
+    Button green;
+
     // Particle System variable for testing
     ParticleSystem psys;    
     
