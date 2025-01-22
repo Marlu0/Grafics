@@ -49,8 +49,8 @@ public:
     void PaintTool( SDL_MouseButtonEvent event);
     
     
-    //
-    
+    // Particle System variable for testing
+    ParticleSystem psys;    
     
     
     void OnKeyPressed(SDL_KeyboardEvent event);
