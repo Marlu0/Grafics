@@ -97,8 +97,6 @@ public:
     void ScanLineDDA(int x0, int y0, int x1, int y1, std::vector<Cell>& table);
     void DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& borderColor, bool isFilled, const Color& fillColor);
 
-    bool IsTriangleOutsideBounds(const Vector2& p0, const Vector2& p1, const Vector2& p2, int imageWidth, int imageHeight);
-
     void DrawImage(const char* filename, bool flip_y, int x, int y);
 
     // Used to easy code
@@ -146,4 +144,25 @@ public:
     inline void SetPixelUnsafe(unsigned int x, unsigned int y, const float& v) { pixels[y * width + x] = v; }
 
     void Resize(unsigned int width, unsigned int height);
+};
+
+class ParticleSystem {
+
+    static const int MAX_PARTICLES = 1000;
+
+    struct Particle {
+        Vector2 position;
+        Vector2 velocity; // Normalized speed and direction of the particle
+        Color color;
+        float acceleration;
+        float ttl; // Time left until the particle expires
+        bool inactive; // Particle is not used/expired, so it can be recreated
+    };
+
+    Particle particles[MAX_PARTICLES];
+
+public:
+    void Init();
+    void Render(Image* framebuffer);
+    void Update(float dt);
 };
