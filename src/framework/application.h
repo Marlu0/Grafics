@@ -20,9 +20,6 @@ public:
 
     float time;
 
-    // Particle System variable for testing
-    ParticleSystem psys;
-
     // Input
     const Uint8* keystate;
     int mouse_state; // Tells which buttons are pressed
