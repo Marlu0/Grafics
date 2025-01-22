@@ -43,6 +43,7 @@ void Application::ToolbarInit(void){
 void Application::Init(void)
 {
     std::cout << "Initiating app..." << std::endl;
+    
     ToolbarInit();
 }
 

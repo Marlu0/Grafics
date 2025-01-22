@@ -1,10 +1,3 @@
-//
-//  button.cpp
-//  ComputerGraphics
-//
-//  Created by Pol Obrador on 22/1/25.
-//
-
 #include "button.h"
 
 bool Button::IsMouseInside(std::vector<int> click){
