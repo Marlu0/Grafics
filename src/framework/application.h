@@ -54,6 +54,9 @@ public:
     }TriState;
     
     int current_activated;
+    Button current_button;
+    Button current_fill;
+    Button current_border;
     //1 pencil
     //2 eraser
     //3 line
@@ -67,6 +70,7 @@ public:
     
     Color fill_color;
     Color border_color;
+    bool fill_activated;
     
     void PaintTool( SDL_MouseButtonEvent event);
     
