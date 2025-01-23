@@ -53,6 +53,21 @@ public:
         std::vector<int> second;
     }TriState;
     
+    int current_activated;
+    //1 pencil
+    //2 eraser
+    //3 line
+    //4 rect
+    //5 triangle
+    //6 circ
+    //7 animated
+    //8 load image
+    //9 save image
+    //10 clear
+    
+    Color fill_color;
+    Color border_color;
+    
     void PaintTool( SDL_MouseButtonEvent event);
     
     // Buttons
@@ -83,7 +98,7 @@ public:
     
     void OnKeyPressed(SDL_KeyboardEvent event);
     std::vector<int> OnMouseButtonDown(SDL_MouseButtonEvent event);
-    void OnMouseButtonUp(SDL_MouseButtonEvent event);
+    bool OnMouseButtonUp(SDL_MouseButtonEvent event);
     void OnMouseMove(SDL_MouseButtonEvent event);
     void OnWheel(SDL_MouseWheelEvent event);
     void OnFileChanged(const char* filename);

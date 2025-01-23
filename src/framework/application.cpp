@@ -24,6 +24,7 @@ Application::Application(const char* caption, int width, int height)
     this->RectState.rect_state = 0;
     this->CircState.circ_state = 0;
     this->TriState.tri_state = 0;
+    this->current_activated = 0;
     this->process_activated = false;
 }
 
@@ -152,13 +153,24 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event) {
 
 void Application::PaintTool(SDL_MouseButtonEvent event){
     std::vector <int> click = OnMouseButtonDown(event);
+    if(click[1] > (window_height - 32) && process_activated == true){
+        return;
+    }
     
-    
-    ///////////LINE////////////////////
-    if (click[0] < 96 && click[0] > 64 && click[1] > ( window_height - 32) && LineState.draw_line_state == 0 && process_activated == false){
+    /////////////LINE////////////////////
+    if ((click[0] < 96 && click[0] > 64 && click[1] > ( window_height - 32) && LineState.draw_line_state == 0 && process_activated == false) ){
+        current_activated = 3;
         LineState.draw_line_state = 1;
         process_activated = true;
-    }else{
+    
+        ToolbarInit();
+        framebuffer.DrawRect(64, 0, 32, 32, Color::RED, 3, false, Color::RED);
+        
+    }else if (current_activated == 3 && click[1] < (window_height - 32)){
+        if(process_activated == false ){
+            process_activated = true;
+            LineState.draw_line_state = 1;
+        }
         
         if(LineState.draw_line_state == 1){
             LineState.first_point = click;
@@ -180,11 +192,22 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
     ///////////////////////////////////
     ///
     /////////////RECTANGLE/////////////
-    if (click[0] > 96 && click[0] < 128 && click[1] > ( window_height - 32) && RectState.rect_state == 0 && process_activated == false){
+    if ((click[0] > 96 && click[0] < 128 && click[1] > ( window_height - 32) && RectState.rect_state == 0 && process_activated == false)){
+        
+        current_activated = 4;
         RectState.rect_state = 1;
         process_activated = true;
-        std::cout << "Hola";
-    }else{
+        
+        ToolbarInit();
+        framebuffer.DrawRect(96, 0, 32, 32, Color::RED, 3, false, Color::RED);
+        
+    }else if (current_activated == 4 && click[1] < (window_height - 32)){
+        
+        if(process_activated == false ){
+            process_activated = true;
+            RectState.rect_state = 1;
+        }
+        
         
         if(RectState.rect_state == 1){
             RectState.first_point = click;
@@ -240,9 +263,20 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
     ///
     //////////////Circle////////////////
     if (click[0] < 192 && click[0] > 160 && click[1] > ( window_height - 32) && CircState.circ_state == 0 && process_activated == false){
+        current_activated = 6;
         CircState.circ_state = 1;
         process_activated = true;
-    }else{
+        
+        ToolbarInit();
+        framebuffer.DrawRect(160, 0, 32, 32, Color::RED, 3, false, Color::RED);
+        
+        
+    }else if ( current_activated == 6 && click[1] < (window_height - 32)){
+        
+        if(process_activated == false ){
+            process_activated = true;
+            CircState.circ_state = 1;
+        }
         
         if(CircState.circ_state == 1){
             CircState.center = click;
@@ -266,9 +300,20 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
         //////////TRIANGLE/////////////
         
         if (click[0] > 128 && click[0] < 160 && click[1] > ( window_height - 32) && TriState.tri_state == 0 && process_activated == false){
+            
+            current_activated = 5;
             TriState.tri_state = 1;
             process_activated = true;
-        }else{
+            
+            ToolbarInit();
+            framebuffer.DrawRect(128, 0, 32, 32, Color::RED, 3, false, Color::RED);
+            
+        }else if (current_activated == 5 && click[1] < (window_height - 32)){
+            
+            if(process_activated == false ){
+                process_activated = true;
+                TriState.tri_state = 1;
+            }
             
             if(TriState.tri_state == 1){
                 TriState.first = click;
@@ -297,7 +342,22 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
             }
         }
     
+    ///////////////////////////////
+    //////////PENCIL///////////////
+    ///
     
+    if (click[0] > 0 && click[0] < 32 && click[1] > ( window_height - 32) && TriState.tri_state == 0 && process_activated == false){
+        current_activated = 1;
+        
+        process_activated = true;
+        
+        ToolbarInit();
+        framebuffer.DrawRect(0, 0, 32, 32, Color::RED, 3, false, Color::RED);
+        
+    }else if (current_activated == 1 && click[1] < ( window_height - 32)){
+        
+        
+    }
     
 }
 
@@ -318,9 +378,13 @@ std::vector<int> Application::OnMouseButtonDown( SDL_MouseButtonEvent event)
     
 }
 
-void Application::OnMouseButtonUp( SDL_MouseButtonEvent event )
+bool Application::OnMouseButtonUp( SDL_MouseButtonEvent event )
 {
-    
+    if(event.type == SDL_MOUSEBUTTONUP){
+        return true;
+    }else{
+        return false;
+    }
 }
 
 void Application::OnMouseMove(SDL_MouseButtonEvent event)
