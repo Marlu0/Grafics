@@ -47,6 +47,12 @@ public:
         std::vector<int> center;
     }CircState;
     
+    struct{
+        int tri_state;
+        std::vector<int> first;
+        std::vector<int> second;
+    }TriState;
+    
     void PaintTool( SDL_MouseButtonEvent event);
     
     // Buttons
@@ -72,7 +78,7 @@ public:
     Button green;
 
     // Particle System variable for testing
-    ParticleSystem psys;    
+    ParticleSystem psys;
     
     
     void OnKeyPressed(SDL_KeyboardEvent event);

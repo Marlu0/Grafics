@@ -23,6 +23,7 @@ Application::Application(const char* caption, int width, int height)
     this->LineState.draw_line_state = 0;
     this->RectState.rect_state = 0;
     this->CircState.circ_state = 0;
+    this->TriState.tri_state = 0;
     this->process_activated = false;
 }
 
@@ -259,9 +260,45 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
             std::cout << "process end";
             return;
         }
-        
-        
     }
+        ///////////////////////////////
+        ///
+        //////////TRIANGLE/////////////
+        
+        if (click[0] > 128 && click[0] < 160 && click[1] > ( window_height - 32) && TriState.tri_state == 0 && process_activated == false){
+            TriState.tri_state = 1;
+            process_activated = true;
+        }else{
+            
+            if(TriState.tri_state == 1){
+                TriState.first = click;
+                
+                TriState.tri_state = 2;
+                return;
+                
+            }else if (TriState.tri_state == 2){
+                TriState.second = click;
+                
+                TriState.tri_state = 3;
+                return;
+                
+            }else if(TriState.tri_state == 3){
+                Vector2 p1(TriState.first[0], window_height - TriState.first[1]);
+                Vector2 p2(TriState.second[0], window_height - TriState.second[1]);
+                Vector2 p3(click[0], window_height - click[1]);
+                
+                framebuffer.DrawTriangle(p1, p2, p3, Color::RED, false, Color::RED);
+                
+                
+                TriState.tri_state = 0;
+                process_activated = false;
+                std::cout << "process end";
+                return;
+            }
+        }
+    
+    
+    
 }
 
 std::vector<int> Application::OnMouseButtonDown( SDL_MouseButtonEvent event)
