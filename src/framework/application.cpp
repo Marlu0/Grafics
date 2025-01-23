@@ -26,6 +26,7 @@ Application::Application(const char* caption, int width, int height)
     this->TriState.tri_state = 0;
     this->current_activated = 0;
     this->pencil_state = 1;
+    this->eraser_state = 1;
     this->process_activated = false;
 }
 
@@ -117,12 +118,13 @@ void Application::Init(void)
 {
     std::cout << "Initiating app..." << std::endl;
     fill_activated = false;
-    border_color = Color::BLACK;
-    fill_color = Color::BLACK;
+    border_color = Color::WHITE;
+    fill_color = Color::WHITE;
     InitButtons();
-    current_button = line;
-    current_fill = black;
-    current_border = black;
+    current_button = pencil;
+    current_fill = white;
+    current_border = white;
+    current_activated = 1;
     ToolbarInit();
 }
 
@@ -385,13 +387,12 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
     ///////////////////////////////
     //////////PENCIL///////////////
     ///
-    if (click[0] > 0 && click[0] < 32 && click[1] > ( window_height - 32) && pencil_state == 1 && process_activated == false){
+    if (click[0] > 0 && click[0] < 32 && click[1] > ( window_height - 32) && pencil_state == 1 && process_activated == false && click[2] != 1){
         current_activated = 1;
-        
+        current_button = pencil;
         process_activated = true;
         std::cout <<"caca1";
         ToolbarInit();
-        framebuffer.DrawRect(0, 0, 32, 32, Color::RED, 3, false, Color::RED);
         pencil_state = 1;
         return;
         
@@ -406,7 +407,47 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
         return;
         
     }
-    
+    /// ERASER
+    if (click[0] > 32 && click[0] < 64 && click[1] > (window_height - 32) && eraser_state == 1 && process_activated == false && click[2] != 1) {
+        current_activated = 2;
+        current_button = eraser;
+        process_activated = true;
+        ToolbarInit();
+        eraser_state = 1;
+        return;
+
+    }
+    else if (current_activated == 2 && click[1] < (window_height - 32) && eraser_state == 1) {
+        eraser_state = 2;
+        process_activated = true;
+        return;
+    }
+    else if (current_activated == 2 && click[1] < (window_height - 32) && eraser_state == 2) {
+
+        eraser_state = 1;
+        process_activated = false;
+        return;
+
+    }
+
+    // LOADIMAGE
+    if (click[0] < loadimage.coordinates[0] + 32 && click[0] > loadimage.coordinates[0] && click[1] > (window_height - 32) && process_activated == false && click[2] != 1) {
+        framebuffer.DrawImage("../res/images/pimfroi.png", false, 0, 32);
+        ToolbarInit();
+    }
+
+    //SAVEIMAGE
+    if (click[0] < saveimage.coordinates[0] + 32 && click[0] > saveimage.coordinates[0] && click[1] > (window_height - 32) && process_activated == false && click[2] != 1) {
+        framebuffer.SaveTGA("drawing.tga");
+        ToolbarInit();
+    }
+
+    //ANIMATION
+    if (click[0] < animation.coordinates[0] + 32 && click[0] > animation.coordinates[0] && click[1] > (window_height - 32) && process_activated == false && click[2] != 1) {
+        
+        ToolbarInit();
+    }
+
     // FILL
     if (click[0] < fill.coordinates[0]+32 && click[0] > fill.coordinates[0] && click[1] > (window_height - 32) && process_activated == false && click[2] != 1) {
         if (fill_activated == true) {
@@ -555,7 +596,12 @@ void Application::OnMouseMove(SDL_MouseButtonEvent event)
 {
     if(pencil_state == 2){
         if (event.y < window_height - 32){
-            framebuffer.DrawCircle(event.x, window_height - event.y, 4, Color::RED, 1, true, Color::RED);
+            framebuffer.DrawCircle(event.x, window_height - event.y, 4, border_color, 1, true, border_color);
+        }
+    }
+    else if (eraser_state == 2) {
+        if (event.y < window_height - 32) {
+            framebuffer.DrawCircle(event.x, window_height - event.y, 15, Color::BLACK, 1, true, Color::BLACK);
         }
     }
 }
