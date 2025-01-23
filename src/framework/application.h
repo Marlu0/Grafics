@@ -53,6 +53,7 @@ public:
         std::vector<int> second;
     }TriState;
     
+    int pencil_state;
     int current_activated;
     Button current_button;
     Button current_fill;

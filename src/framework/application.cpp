@@ -25,6 +25,7 @@ Application::Application(const char* caption, int width, int height)
     this->CircState.circ_state = 0;
     this->TriState.tri_state = 0;
     this->current_activated = 0;
+    this->pencil_state = 1;
     this->process_activated = false;
 }
 
@@ -384,20 +385,28 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
     ///////////////////////////////
     //////////PENCIL///////////////
     ///
-    /*
-    if (click[0] > 0 && click[0] < 32 && click[1] > ( window_height - 32) && TriState.tri_state == 0 && process_activated == false && click[2] != 1){
+    if (click[0] > 0 && click[0] < 32 && click[1] > ( window_height - 32) && pencil_state == 1 && process_activated == false){
         current_activated = 1;
         
         process_activated = true;
-        
+        std::cout <<"caca1";
         ToolbarInit();
+        framebuffer.DrawRect(0, 0, 32, 32, Color::RED, 3, false, Color::RED);
+        pencil_state = 1;
+        return;
         
-    }else if (current_activated == 1 && click[1] < ( window_height - 32)){
+    }else if (current_activated == 1 && click[1] < ( window_height - 32) && pencil_state == 1){
+        pencil_state = 2;
+        process_activated = true;
+        return;
+    }else if (current_activated == 1 && click[1] < ( window_height - 32) && pencil_state == 2){
         
+        pencil_state = 1;
+        process_activated = false;
+        return;
         
     }
-    */
-
+    
     // FILL
     if (click[0] < fill.coordinates[0]+32 && click[0] > fill.coordinates[0] && click[1] > (window_height - 32) && process_activated == false && click[2] != 1) {
         if (fill_activated == true) {
@@ -544,7 +553,11 @@ bool Application::OnMouseButtonUp( SDL_MouseButtonEvent event )
 
 void Application::OnMouseMove(SDL_MouseButtonEvent event)
 {
-    
+    if(pencil_state == 2){
+        if (event.y < window_height - 32){
+            framebuffer.DrawCircle(event.x, window_height - event.y, 4, Color::RED, 1, true, Color::RED);
+        }
+    }
 }
 
 void Application::OnWheel(SDL_MouseWheelEvent event)
