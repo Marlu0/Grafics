@@ -183,7 +183,7 @@ void launchLoop(Application* app)
 						break;
 					case SDL_KEYUP:  // EXAMPLE OF sync keyboard input
 						app->OnKeyPressed(sdlEvent.key);
-                        app->PaintTool(sdlEvent.button, sdlEvent.key);
+						app->PaintTool(sdlEvent.button, sdlEvent.key);
 						break;
 					case SDL_MOUSEWHEEL:
 						app->OnWheel(sdlEvent.wheel);

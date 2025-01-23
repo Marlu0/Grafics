@@ -24,7 +24,8 @@ Application::Application(const char* caption, int width, int height)
     this->RectState.rect_state = 0;
     this->CircState.circ_state = 0;
     this->TriState.tri_state = 0;
-    this->current_activated = 0;
+    this->current_activated = 1;
+    this->border_size = 1;
     this->pencil_state = 1;
     this->eraser_state = 1;
     this->process_activated = false;
@@ -118,26 +119,37 @@ void Application::Init(void)
 {
     std::cout << "Initiating app..." << std::endl;
     fill_activated = false;
+    is_animation = false;
     border_color = Color::WHITE;
     fill_color = Color::WHITE;
     InitButtons();
     current_button = pencil;
     current_fill = white;
     current_border = white;
-    current_activated = 1;
     ToolbarInit();
+    psys.Init();
 }
 
 // Render one frame
 void Application::Render(void)
 {
-    framebuffer.Render();
+    if (is_animation) {
+        framebuffer.Fill(Color::BLACK);
+        psys.Render(&framebuffer);
+        ToolbarInit();
+    }
+    framebuffer.Render();    
 }
 
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-
+    if (is_animation) {
+        psys.Update(seconds_elapsed);
+    }
+    else {
+        return;
+    }
 }
 
 //keyboard press event
@@ -150,42 +162,43 @@ int Application::OnKeyPressed(SDL_KeyboardEvent event) {
 
     case SDLK_1:
         // Action: Draw Lines
-            return 1;
+        return 1;
         break;
 
     case SDLK_2:
         // Action: Draw Rectangles
-            return 2;
+        return 2;
         break;
 
     case SDLK_3:
         // Action: Draw Circles
-            return 3;
+        return 3;
         break;
 
     case SDLK_4:
         // Action: Draw Triangles
-            return 4;
+        return 4;
         break;
 
     case SDLK_5:
         // Action: Paint
-            return 5;
+        return 5;
         break;
 
     case SDLK_6:
         // Action: Animation
-            return 6;
+        return 6;
         break;
 
     case SDLK_f:
         // Action: Fill Shapes
-            return 7;
+        return 7;
+
         break;
-    
+
     case SDLK_e:
-        // Action: Fill Shapes
-            return 8;
+        // Action: Eraser
+        return 8;
         break;
 
     case SDLK_KP_PLUS:
@@ -214,13 +227,13 @@ void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_ev
     }
 
     /////////////LINE////////////////////
-    if ((click[0] < 96 && click[0] > 64 && click[1] > ( window_height - 32) && LineState.draw_line_state == 0 && process_activated == false && click[2] != 1) || key_pressed == 1){
+    if ((click[0] < 96 && click[0] > 64 && click[1] > ( window_height - 32) && LineState.draw_line_state == 0 && process_activated == false && click[2] != 1) || key_pressed == 1 && LineState.draw_line_state == 0){
         current_button = line;
         current_activated = 3;
         LineState.draw_line_state = 1;
         process_activated = true;
-    
         ToolbarInit();
+        
         
     }else if (current_activated == 3 && click[1] < (window_height - 32)){
         if(process_activated == false ){
@@ -238,6 +251,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_ev
             framebuffer.DrawLineDDA(LineState.first_point[0], window_height - LineState.first_point[1], click[0], window_height - click[1], border_color);
             LineState.draw_line_state = 0;
             process_activated = false;
+            ToolbarInit();
             std::cout << "process end";
             return;
         }
@@ -245,10 +259,8 @@ void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_ev
         
     }
     
-    ///////////////////////////////////
-    ///
     /////////////RECTANGLE/////////////
-    if ((click[0] > 96 && click[0] < 128 && click[1] > ( window_height - 32) && RectState.rect_state == 0 && process_activated == false && click[2] != 1) || key_pressed == 2){
+    if (click[0] > 96 && click[0] < 128 && click[1] > ( window_height - 32) && RectState.rect_state == 0 && process_activated == false && click[2] != 1 || key_pressed == 2){
         current_button = rectangle;
         current_activated = 4;
         RectState.rect_state = 1;
@@ -274,7 +286,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_ev
             
             if(RectState.first_point[0] >= click[0] && (window_height - RectState.first_point[1]) <= (window_height - click[1])){ //second quadrant
                 
-                framebuffer.DrawRect(click[0], window_height -  RectState.first_point[1], RectState.first_point[0] - click[0], RectState.first_point[1] - click[1], border_color, 1, fill_activated, fill_color);
+                framebuffer.DrawRect(click[0], window_height -  RectState.first_point[1], RectState.first_point[0] - click[0], RectState.first_point[1] - click[1], border_color, std::min(border_size, std::min(RectState.first_point[0] - click[0], RectState.first_point[1] - click[1])), fill_activated, fill_color);
                 
                 
                 RectState.rect_state = 0;
@@ -283,7 +295,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_ev
                 
             }else if( RectState.first_point[0] >= click[0] && (window_height - RectState.first_point[1]) >= (window_height - click[1])){ // third quadrant
                 
-                framebuffer.DrawRect(click[0], window_height - click[1], RectState.first_point[0] - click[0], click[1] - RectState.first_point[1], border_color, 1, fill_activated, fill_color);
+                framebuffer.DrawRect(click[0], window_height - click[1], RectState.first_point[0] - click[0], click[1] - RectState.first_point[1], border_color, border_size, fill_activated, fill_color);
                 
                 
                 RectState.rect_state = 0;
@@ -292,7 +304,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_ev
                 
             }else if( RectState.first_point[0] <= click[0] && (window_height - RectState.first_point[1]) >= (window_height - click[1])){ // fourth quadrant
                 
-                framebuffer.DrawRect(RectState.first_point[0], window_height - click[1], click[0] - RectState.first_point[0], click[1] - RectState.first_point[1], border_color, 1, fill_activated, fill_color);
+                framebuffer.DrawRect(RectState.first_point[0], window_height - click[1], click[0] - RectState.first_point[0], click[1] - RectState.first_point[1], border_color, border_size, fill_activated, fill_color);
                 
                 
                 RectState.rect_state = 0;
@@ -300,7 +312,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_ev
                 return;
                 
             }else{
-                framebuffer.DrawRect(RectState.first_point[0], window_height - RectState.first_point[1], click[0] - RectState.first_point[0], RectState.first_point[1] - click[1], border_color, 1, fill_activated, fill_color);
+                framebuffer.DrawRect(RectState.first_point[0], window_height - RectState.first_point[1], click[0] - RectState.first_point[0], RectState.first_point[1] - click[1], border_color, border_size, fill_activated, fill_color);
                 
                 
                 RectState.rect_state = 0;
@@ -317,7 +329,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_ev
     ////////////////////////////////////
     ///
     //////////////Circle////////////////
-    if ((click[0] < 192 && click[0] > 160 && click[1] > ( window_height - 32) && CircState.circ_state == 0 && process_activated == false && click[2] != 1) || key_pressed == 3){
+    if (click[0] < 192 && click[0] > 160 && click[1] > ( window_height - 32) && CircState.circ_state == 0 && process_activated == false && click[2] != 1 || key_pressed == 3){
         current_button = circle;
         current_activated = 6;
         CircState.circ_state = 1;
@@ -343,7 +355,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_ev
             
             int radius = sqrt(pow(abs(CircState.center[0] - click[0]), 2) +  pow(abs(CircState.center[1] - click[1]), 2));
             
-            framebuffer.DrawCircle(CircState.center[0], window_height - CircState.center[1], radius, border_color, 1, fill_activated, fill_color);
+            framebuffer.DrawCircle(CircState.center[0], window_height - CircState.center[1], radius, border_color, border_size, fill_activated, fill_color);
             CircState.circ_state = 0;
             process_activated = false;
             ToolbarInit();
@@ -354,7 +366,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_ev
         ///
         //////////TRIANGLE/////////////
         
-        if ((click[0] > 128 && click[0] < 160 && click[1] > ( window_height - 32) && TriState.tri_state == 0 && process_activated == false && click[2] != 1) || key_pressed == 4){
+        if (click[0] > 128 && click[0] < 160 && click[1] > ( window_height - 32) && TriState.tri_state == 0 && process_activated == false && click[2] != 1 || key_pressed == 4){
             current_button = triangle;
             current_activated = 5;
             TriState.tri_state = 1;
@@ -399,7 +411,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_ev
     ///////////////////////////////
     //////////PENCIL///////////////
     ///
-    if ((click[0] > 0 && click[0] < 32 && click[1] > ( window_height - 32) && pencil_state == 1 && process_activated == false && click[2] != 1) || key_pressed == 5){
+    if (click[0] > 0 && click[0] < 32 && click[1] > ( window_height - 32) && pencil_state == 1 && process_activated == false && click[2] != 1 || key_pressed == 5){
         current_activated = 1;
         current_button = pencil;
         process_activated = true;
@@ -420,7 +432,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_ev
         
     }
     /// ERASER
-    if ((click[0] > 32 && click[0] < 64 && click[1] > (window_height - 32) && eraser_state == 1 && process_activated == false && click[2] != 1) || key_pressed == 8) {
+    if ((click[0] > 32 && click[0] < 64 && click[1] > (window_height - 32) && eraser_state == 1 && process_activated == false && click[2] != 1) || (key_pressed == 8 && process_activated == false && eraser_state == 1)) {
         current_activated = 2;
         current_button = eraser;
         process_activated = true;
@@ -455,13 +467,18 @@ void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_ev
     }
 
     //ANIMATION
-    if ((click[0] < animation.coordinates[0] + 32 && click[0] > animation.coordinates[0] && click[1] > (window_height - 32) && process_activated == false && click[2] != 1) || key_pressed == 6) {
+    if (click[0] < animation.coordinates[0] + 32 && click[0] > animation.coordinates[0] && click[1] > (window_height - 32) && process_activated == false && click[2] != 1 || key_pressed == 6 && process_activated == false) {
+        if (is_animation == false) {
+            is_animation = true;
+        }
+        else {
+            is_animation = false;
+        }
         
-        ToolbarInit();
     }
 
     // FILL
-    if ((click[0] < fill.coordinates[0]+32 && click[0] > fill.coordinates[0] && click[1] > (window_height - 32) && process_activated == false && click[2] != 1) || key_pressed == 7) {
+    if (click[0] < fill.coordinates[0]+32 && click[0] > fill.coordinates[0] && click[1] > (window_height - 32) && process_activated == false && click[2] != 1 || key_pressed == 7) {
         if (fill_activated == true) {
             fill_activated = false;
         }

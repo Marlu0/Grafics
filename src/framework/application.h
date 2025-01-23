@@ -52,15 +52,15 @@ public:
         std::vector<int> first;
         std::vector<int> second;
     }TriState;
-    
-
 
     int pencil_state;
     int eraser_state;
     int current_activated;
+    bool is_animation;
     Button current_button;
     Button current_fill;
     Button current_border;
+    Image animationbuffer;
     //1 pencil
     //2 eraser
     //3 line
@@ -113,9 +113,8 @@ public:
 
     // CPU Global framebuffer
     Image framebuffer;
+
     int border_size = 1;
-    
-    
     
     uint32_t last_click_time; // Store the time of the last click
     const uint32_t click_delay = 200; // Minimum delay between clicks in milliseconds

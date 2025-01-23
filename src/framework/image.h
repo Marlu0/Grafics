@@ -98,6 +98,7 @@ public:
     void DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& borderColor, bool isFilled, const Color& fillColor);
 
     void DrawImage(const char* filename, bool flip_y, int x, int y);
+    void DrawImage(Image image, bool flip_y, int x, int y);
 
     // Used to easy code
     #ifndef IGNORE_LAMBDAS
@@ -147,7 +148,7 @@ public:
 };
 
 class ParticleSystem {
-    static const int MAX_PARTICLES = 1000;
+    static const int MAX_PARTICLES = 500;
     struct Particle {
         Vector2 position;
         Vector2 velocity; // Normalized speed and direction of the particle

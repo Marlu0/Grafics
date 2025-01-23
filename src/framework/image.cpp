@@ -330,7 +330,7 @@ void Image::DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c)
     // Iterate d times to paint pixels
     for (int i = 0; i <= d; ++i) {
         // Paint the current pixel (flooring x and y)
-        SetPixelUnsafe(static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y)), c);
+        SetPixel(static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y)), c);
 
         // Increment x and y by the step vector
         x += vx;
@@ -343,18 +343,18 @@ void Image::DrawRect(int x, int y, int w, int h, const Color& c)
 {
 
     for (int i = 0; i < w; ++i) {
-        SetPixelUnsafe(x + i, y, c);
-        SetPixelUnsafe(x + i, y + h - 1, c);
+        SetPixel(x + i, y, c);
+        SetPixel(x + i, y + h - 1, c);
     }
 
     for (int j = 0; j < h; ++j) {
-        SetPixelUnsafe(x, y + j, c);
-        SetPixelUnsafe(x + w - 1, y + j, c);
+        SetPixel(x, y + j, c);
+        SetPixel(x + w - 1, y + j, c);
     }
 }
 void Image::DrawRect(int x, int y, int w, int h, const Color& borderColor, int borderWidth, bool isFilled, const Color& fillColor)
 {
-    for (int j = 0; j < borderWidth; ++j) {
+    for (int j = 0; j < std::min(borderWidth, std::min(w, h)); ++j) {
         DrawRect(x + j, y + j, w - j * 2, h - j * 2, borderColor);
     }
     if (isFilled)
@@ -498,7 +498,7 @@ void Image::DrawCircle(int xc, int yc, int r, const Color& borderColor, int bord
 
         DrawOctant(xc, yc, x, y, borderColor);
 
-        for (int i = 0; i < borderWidth; i++)
+        for (int i = 0; i < std::min(r, borderWidth); i++)
         {
             DrawOctant(xc, yc, x - i, y, borderColor);
             DrawOctant(xc, yc, x, y - i, borderColor);
@@ -523,6 +523,24 @@ void Image::DrawImage(const char* filename, bool flip_y, int x, int y)
         for (int j = 0; j < image.height; ++j) {
             for (int i = 0; i < image.width; ++i) {
                 SetPixel(x+i, y+j, image.GetPixel(i,j));
+            }
+        }
+    }
+}
+void Image::DrawImage(Image image, bool flip_y, int x, int y)
+{
+    if (flip_y) {
+        for (int j = image.height; j > 0; --j) {
+            for (int i = 0; i < image.width; ++i) {
+                SetPixel(x + i, y + image.height - j, image.GetPixel(i, j));
+            }
+
+        }
+    }
+    else {
+        for (int j = 0; j < image.height; ++j) {
+            for (int i = 0; i < image.width; ++i) {
+                SetPixel(x + i, y + j, image.GetPixel(i, j));
             }
         }
     }
