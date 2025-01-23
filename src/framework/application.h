@@ -76,7 +76,7 @@ public:
     Color border_color;
     bool fill_activated;
     
-    void PaintTool( SDL_MouseButtonEvent event);
+    void PaintTool( SDL_MouseButtonEvent event, SDL_KeyboardEvent key_event);
     
     // Buttons
     
@@ -104,7 +104,7 @@ public:
     ParticleSystem psys;
     
     
-    void OnKeyPressed(SDL_KeyboardEvent event);
+    int OnKeyPressed(SDL_KeyboardEvent event);
     std::vector<int> OnMouseButtonDown(SDL_MouseButtonEvent event);
     bool OnMouseButtonUp(SDL_MouseButtonEvent event);
     void OnMouseMove(SDL_MouseButtonEvent event);

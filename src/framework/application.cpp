@@ -141,7 +141,7 @@ void Application::Update(float seconds_elapsed)
 }
 
 //keyboard press event
-void Application::OnKeyPressed(SDL_KeyboardEvent event) {
+int Application::OnKeyPressed(SDL_KeyboardEvent event) {
     // KEY CODES: https://wiki.libsdl.org/SDL2/SDL_Keycode
     switch (event.keysym.sym) {
     case SDLK_ESCAPE:
@@ -150,31 +150,42 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event) {
 
     case SDLK_1:
         // Action: Draw Lines
-       
+            return 1;
         break;
 
     case SDLK_2:
         // Action: Draw Rectangles
+            return 2;
         break;
 
     case SDLK_3:
         // Action: Draw Circles
+            return 3;
         break;
 
     case SDLK_4:
         // Action: Draw Triangles
+            return 4;
         break;
 
     case SDLK_5:
         // Action: Paint
+            return 5;
         break;
 
     case SDLK_6:
         // Action: Animation
+            return 6;
         break;
 
     case SDLK_f:
         // Action: Fill Shapes
+            return 7;
+        break;
+    
+    case SDLK_e:
+        // Action: Fill Shapes
+            return 8;
         break;
 
     case SDLK_KP_PLUS:
@@ -195,14 +206,15 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event) {
     }
 }
 
-void Application::PaintTool(SDL_MouseButtonEvent event){
+void Application::PaintTool(SDL_MouseButtonEvent event, SDL_KeyboardEvent key_event){
     std::vector <int> click = OnMouseButtonDown(event);
+    int key_pressed = OnKeyPressed(key_event);
     if(click[1] > (window_height - 32) && process_activated == true){
         return;
     }
 
     /////////////LINE////////////////////
-    if ((click[0] < 96 && click[0] > 64 && click[1] > ( window_height - 32) && LineState.draw_line_state == 0 && process_activated == false && click[2] != 1) ){
+    if ((click[0] < 96 && click[0] > 64 && click[1] > ( window_height - 32) && LineState.draw_line_state == 0 && process_activated == false && click[2] != 1) || key_pressed == 1){
         current_button = line;
         current_activated = 3;
         LineState.draw_line_state = 1;
@@ -236,7 +248,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
     ///////////////////////////////////
     ///
     /////////////RECTANGLE/////////////
-    if ((click[0] > 96 && click[0] < 128 && click[1] > ( window_height - 32) && RectState.rect_state == 0 && process_activated == false && click[2] != 1)){
+    if ((click[0] > 96 && click[0] < 128 && click[1] > ( window_height - 32) && RectState.rect_state == 0 && process_activated == false && click[2] != 1) || key_pressed == 2){
         current_button = rectangle;
         current_activated = 4;
         RectState.rect_state = 1;
@@ -305,7 +317,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
     ////////////////////////////////////
     ///
     //////////////Circle////////////////
-    if (click[0] < 192 && click[0] > 160 && click[1] > ( window_height - 32) && CircState.circ_state == 0 && process_activated == false && click[2] != 1){
+    if ((click[0] < 192 && click[0] > 160 && click[1] > ( window_height - 32) && CircState.circ_state == 0 && process_activated == false && click[2] != 1) || key_pressed == 3){
         current_button = circle;
         current_activated = 6;
         CircState.circ_state = 1;
@@ -342,7 +354,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
         ///
         //////////TRIANGLE/////////////
         
-        if (click[0] > 128 && click[0] < 160 && click[1] > ( window_height - 32) && TriState.tri_state == 0 && process_activated == false && click[2] != 1){
+        if ((click[0] > 128 && click[0] < 160 && click[1] > ( window_height - 32) && TriState.tri_state == 0 && process_activated == false && click[2] != 1) || key_pressed == 4){
             current_button = triangle;
             current_activated = 5;
             TriState.tri_state = 1;
@@ -387,7 +399,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
     ///////////////////////////////
     //////////PENCIL///////////////
     ///
-    if (click[0] > 0 && click[0] < 32 && click[1] > ( window_height - 32) && pencil_state == 1 && process_activated == false && click[2] != 1){
+    if ((click[0] > 0 && click[0] < 32 && click[1] > ( window_height - 32) && pencil_state == 1 && process_activated == false && click[2] != 1) || key_pressed == 5){
         current_activated = 1;
         current_button = pencil;
         process_activated = true;
@@ -408,7 +420,7 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
         
     }
     /// ERASER
-    if (click[0] > 32 && click[0] < 64 && click[1] > (window_height - 32) && eraser_state == 1 && process_activated == false && click[2] != 1) {
+    if ((click[0] > 32 && click[0] < 64 && click[1] > (window_height - 32) && eraser_state == 1 && process_activated == false && click[2] != 1) || key_pressed == 8) {
         current_activated = 2;
         current_button = eraser;
         process_activated = true;
@@ -443,13 +455,13 @@ void Application::PaintTool(SDL_MouseButtonEvent event){
     }
 
     //ANIMATION
-    if (click[0] < animation.coordinates[0] + 32 && click[0] > animation.coordinates[0] && click[1] > (window_height - 32) && process_activated == false && click[2] != 1) {
+    if ((click[0] < animation.coordinates[0] + 32 && click[0] > animation.coordinates[0] && click[1] > (window_height - 32) && process_activated == false && click[2] != 1) || key_pressed == 6) {
         
         ToolbarInit();
     }
 
     // FILL
-    if (click[0] < fill.coordinates[0]+32 && click[0] > fill.coordinates[0] && click[1] > (window_height - 32) && process_activated == false && click[2] != 1) {
+    if ((click[0] < fill.coordinates[0]+32 && click[0] > fill.coordinates[0] && click[1] > (window_height - 32) && process_activated == false && click[2] != 1) || key_pressed == 7) {
         if (fill_activated == true) {
             fill_activated = false;
         }

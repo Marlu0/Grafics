@@ -173,7 +173,7 @@ void launchLoop(Application* app)
 					case SDL_QUIT: return; break; // EVENT for when the user clicks the [x] in the corner
 					case SDL_MOUSEBUTTONDOWN: // EXAMPLE OF sync mouse input
 						app->OnMouseButtonDown(sdlEvent.button);
-                        app->PaintTool(sdlEvent.button);
+                        app->PaintTool(sdlEvent.button, sdlEvent.key);
 						break;
 					case SDL_MOUSEBUTTONUP:
 						app->OnMouseButtonUp(sdlEvent.button);
@@ -183,6 +183,7 @@ void launchLoop(Application* app)
 						break;
 					case SDL_KEYUP:  // EXAMPLE OF sync keyboard input
 						app->OnKeyPressed(sdlEvent.key);
+                        app->PaintTool(sdlEvent.button, sdlEvent.key);
 						break;
 					case SDL_MOUSEWHEEL:
 						app->OnWheel(sdlEvent.wheel);
