@@ -7,10 +7,10 @@
 class Entity
 {
 public:
-	Mesh mesh;
+	Mesh *mesh;
 	Matrix44 modelMatrix;
 
 	Entity::Entity(void);
-	Entity::Entity(Mesh mesh, Matrix44 modelMatrix);
+	Entity::Entity(const char* filename, Matrix44 modelMatrix);
 	void Entity::Render(Image* framebuffer, Camera* camera, const Color& c);
 };

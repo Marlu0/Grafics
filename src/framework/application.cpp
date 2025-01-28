@@ -26,13 +26,22 @@ Application::~Application()
 void Application::Init(void)
 {
 	std::cout << "Initiating app..." << std::endl;
+
+	Camera camera;
+	camera.SetExampleViewMatrix();
+	camera.SetExampleProjectionMatrix();
+	Matrix44 ma;
+	ma.SetIdentity();
+
+	Entity entity1();
+	
 }
 
 // Render one frame
 void Application::Render(void)
 {
 	// ...
-
+	
 	framebuffer.Render();
 }
 
