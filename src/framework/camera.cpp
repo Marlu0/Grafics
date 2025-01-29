@@ -86,18 +86,19 @@ void Camera::UpdateViewMatrix()
 	// Reset Matrix (Identity)
 	view_matrix.SetIdentity();
 
-	// Comment this line to create your own projection matrix!
-	SetExampleViewMatrix();
-
 	// Remember how to fill a Matrix4x4 (check framework slides)
 	// Careful with the order of matrix multiplications, and be sure to use normalized vectors!
-	
-	// Create the view matrix rotation
-	// ...
-	// view_matrix.M[3][3] = 1.0;
 
-	// Translate view matrix
-	// ...
+	Vector3 zc = (eye - center).Normalize();
+	zc.x = -zc.x; zc.y = -zc.y; zc.z = -zc.z;
+	Vector3 xc = up.Cross(zc).Normalize();
+	Vector3 yc = zc.Cross(xc);
+
+	view_matrix.Set
+	   (xc.x, xc.y, xc.z, -1 * (xc.Dot(eye)),
+		yc.x, yc.y, yc.z, -1 * (yc.Dot(eye)),
+		zc.x, zc.y, zc.z, -1 * (zc.Dot(eye)),
+		0, 0, 0, 1);
 
 	UpdateViewProjectionMatrix();
 }
@@ -118,8 +119,13 @@ void Camera::UpdateProjectionMatrix()
 		// ...
 	}
 	else if (type == ORTHOGRAPHIC) {
-		// ...
-	} 
+		Matrix44 rotation;
+		rotation.Set
+		   (0, 0, 0, 0,
+			0, 0, 0, 0,
+			0, 0, 0, 0,
+			0, 0, 0, 0);
+	}
 
 	UpdateViewProjectionMatrix();
 }

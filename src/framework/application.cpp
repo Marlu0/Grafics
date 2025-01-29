@@ -17,7 +17,7 @@ Application::Application(const char* caption, int width, int height)
 	this->keystate = SDL_GetKeyboardState(nullptr);
 
 	this->framebuffer.Resize(w, h);
-	this->entity = (Entity**)malloc(sizeof(Entity*) * 2);
+	this->entity = (Entity**)malloc(sizeof(Entity*) * 3);
 }
 
 Application::~Application()
@@ -40,16 +40,26 @@ void Application::Init(void)
 			0, 0, 3, 0,
 			0, 0, 0, 0);
 
+	Matrix44 M3;
+	M3.Set(2, 0, 0, 0,
+			0, 2, 0, 0,
+			0, 0, 2, 0,
+			0, 0, 0, 1);
+
 	Mesh* mesh1 = new Mesh();
-	mesh1->LoadOBJ("../res/meshes/lee.obj");
+	mesh1->LoadOBJ("../res/meshes/anna.obj");
 
 	Mesh* mesh2 = new Mesh();
-	mesh2->LoadOBJ("../res/meshes/anna.obj");
+	mesh2->LoadOBJ("../res/meshes/cleo.obj");
+
+	Mesh* mesh3 = new Mesh();
+	mesh3->LoadOBJ("../res/meshes/lee.obj");
 
 	camera = Camera();
 
 	entity[0] = new Entity(mesh1, M1);
 	entity[1] = new Entity(mesh2, M2);
+	entity[2] = new Entity(mesh3, M3);
 }
 
 // Render one frame
@@ -59,6 +69,7 @@ void Application::Render(void)
 	framebuffer.Fill(Color::BLACK);
 	entity[0]->Render(&framebuffer, &camera, Color::RED);
 	entity[1]->Render(&framebuffer, &camera, Color::GREEN);
+	entity[2]->Render(&framebuffer, &camera, Color::YELLOW);
 	framebuffer.Render();
 }
 
