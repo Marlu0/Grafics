@@ -11,7 +11,8 @@ Entity::Entity(Mesh* mesh_ptr, Matrix44 transform)
 	modelMatrix = transform;
 }
 
-void Entity::Render(Image* framebuffer, Camera* camera, const Color& c) {
+void Entity::Render(Image* framebuffer, Camera* camera, const Color& c)
+{
 	bool negZ = false;
 	std::vector<Vector3> vertices = mesh->GetVertices();
 	
@@ -26,12 +27,10 @@ void Entity::Render(Image* framebuffer, Camera* camera, const Color& c) {
 		{
 			Vector2 screenPos = Vector2((clipPos.x + 1)/2 * framebuffer->width, (clipPos.y + 1)/2 * framebuffer->height);
 			
-			if (counter < 3)
-			{
-				triangle[counter] = screenPos;
-				counter++;
-			}
-			else
+			triangle[counter] = screenPos;
+			counter++;
+			
+			if (counter == 3)
 			{
 				framebuffer->DrawTriangle(triangle[0], triangle[1], triangle[2], c, false, c);
 				counter = 0;
