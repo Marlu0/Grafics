@@ -7,10 +7,15 @@
 #include "main/includes.h"
 #include "framework.h"
 #include "image.h"
+#include "entity.h"
 
 class Application
 {
 public:
+
+	// Entity and camera
+	Camera camera;
+	Entity** entity;
 
 	// Window
 

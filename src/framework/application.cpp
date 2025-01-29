@@ -17,6 +17,7 @@ Application::Application(const char* caption, int width, int height)
 	this->keystate = SDL_GetKeyboardState(nullptr);
 
 	this->framebuffer.Resize(w, h);
+	this->entity = (Entity**)malloc(sizeof(Entity*) * 2);
 }
 
 Application::~Application()
@@ -27,21 +28,37 @@ void Application::Init(void)
 {
 	std::cout << "Initiating app..." << std::endl;
 
-	Camera camera;
-	camera.SetExampleViewMatrix();
-	camera.SetExampleProjectionMatrix();
-	Matrix44 ma;
-	ma.SetIdentity();
+	Matrix44 M1;
+	M1.Set(	2, 0, 1, 0.5,
+			0, 3, 0, -0.75,
+			0, 0, 2, 0,
+			0, 0, 0, 0);
 
-	Entity entity1();
-	
+	Matrix44 M2;
+	M2.Set(	3, 0, 0, -0.5,
+			0, 3, -2, -0.75,
+			0, 0, 3, 0,
+			0, 0, 0, 0);
+
+	Mesh* mesh1 = new Mesh();
+	mesh1->LoadOBJ("../res/meshes/lee.obj");
+
+	Mesh* mesh2 = new Mesh();
+	mesh2->LoadOBJ("../res/meshes/anna.obj");
+
+	camera = Camera();
+
+	entity[0] = new Entity(mesh1, M1);
+	entity[1] = new Entity(mesh2, M2);
 }
 
 // Render one frame
 void Application::Render(void)
 {
 	// ...
-	
+	framebuffer.Fill(Color::BLACK);
+	entity[0]->Render(&framebuffer, &camera, Color::RED);
+	entity[1]->Render(&framebuffer, &camera, Color::GREEN);
 	framebuffer.Render();
 }
 
