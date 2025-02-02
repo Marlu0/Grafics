@@ -32,13 +32,13 @@ void Application::Init(void)
 	M1.Set(	2, 0, 1, 0.5,
 			0, 3, 0, -0.75,
 			0, 0, 2, 0,
-			0, 0, 0, 0);
+			0, 0, 0, 1);
 
 	Matrix44 M2;
 	M2.Set(	3, 0, 0, -0.5,
 			0, 3, -2, -0.75,
 			0, 0, 3, 0,
-			0, 0, 0, 0);
+			0, 0, 0, 1);
 
 	Matrix44 M3;
 	M3.Set(2, 0, 0, 0,
@@ -46,6 +46,7 @@ void Application::Init(void)
 			0, 0, 2, 0,
 			0, 0, 0, 1);
 
+    M1.Translate(0, -1, -1);
 	Mesh* mesh1 = new Mesh();
 	mesh1->LoadOBJ("../res/meshes/anna.obj");
 
@@ -56,7 +57,9 @@ void Application::Init(void)
 	mesh3->LoadOBJ("../res/meshes/lee.obj");
 
 	camera = Camera();
-
+    camera.LookAt(Vector3(0, 0, 1), Vector3(0, 0, -1), Vector3(0, 1, 0));
+    camera.SetPerspective(3.14 / 2, 1.6, 0.1, 100);  // Adjust near/far planes
+    //camera.SetOrthographic(-1,1,1,-1,-1, 1);
 	entity[0] = new Entity(mesh1, M1);
 	entity[1] = new Entity(mesh2, M2);
 	entity[2] = new Entity(mesh3, M3);

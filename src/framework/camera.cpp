@@ -6,7 +6,11 @@
 Camera::Camera()
 {
 	view_matrix.SetIdentity();
-	SetOrthographic(-1,1,1,-1,-1,1);
+    //LookAt(Vector3(0, 0, 5), Vector3(0, 0, -1), Vector3(0, 1, 0));
+    //SetOrthographic(-1,1,1,-1,-1, 1);
+    
+   
+    
 }
 
 Vector3 Camera::GetLocalVector(const Vector3& v)
@@ -83,24 +87,19 @@ void Camera::LookAt(const Vector3& eye, const Vector3& center, const Vector3& up
 
 void Camera::UpdateViewMatrix()
 {
-	// Reset Matrix (Identity)
-	view_matrix.SetIdentity();
+       Vector3 zc = (eye - center).Normalize();          // Forward vector (camera looks towards -Z)
+       Vector3 xc = (up.Cross(zc)).Normalize();          // Right vector (+X)
+       Vector3 yc = (zc.Cross(xc)).Normalize();          // True Up vector (+Y)
 
-	// Remember how to fill a Matrix4x4 (check framework slides)
-	// Careful with the order of matrix multiplications, and be sure to use normalized vectors!
+       // Set view matrix (consistent with right-handed system)
+       view_matrix.Set(
+           xc.x, xc.y, xc.z, -xc.Dot(eye),
+           yc.x, yc.y, yc.z, -yc.Dot(eye),
+           zc.x, zc.y, zc.z, -zc.Dot(eye),
+           0,    0,    0,     1
+       );
 
-	Vector3 zc = (eye - center).Normalize();
-	zc.x = -zc.x; zc.y = -zc.y; zc.z = -zc.z;
-	Vector3 xc = up.Cross(zc).Normalize();
-	Vector3 yc = zc.Cross(xc);
-
-	view_matrix.Set
-	   (xc.x, xc.y, xc.z, -1 * (xc.Dot(eye)),
-		yc.x, yc.y, yc.z, -1 * (yc.Dot(eye)),
-		zc.x, zc.y, zc.z, -1 * (zc.Dot(eye)),
-		0, 0, 0, 1);
-
-	UpdateViewProjectionMatrix();
+       UpdateViewProjectionMatrix();
 }
 
 // Create a projection matrix
@@ -110,21 +109,26 @@ void Camera::UpdateProjectionMatrix()
 	projection_matrix.SetIdentity();
 
 	// Comment this line to create your own projection matrix!
-	SetExampleProjectionMatrix();
+	//SetExampleProjectionMatrix();
 
 	// Remember how to fill a Matrix4x4 (check framework slides)
 	
 	if (type == PERSPECTIVE) {
-		// projection_matrix.M[2][3] = -1;
-		// ...
+        
+        float f = 1/(tan(fov/2));
+        
+        projection_matrix.Set
+           (f/aspect, 0, 0, 0,
+            0, f, 0, 0,
+            0, 0, (near_plane+far_plane)/(near_plane-far_plane), (2*far_plane*near_plane)/(near_plane-far_plane),
+            0, 0, -1, 0);
 	}
 	else if (type == ORTHOGRAPHIC) {
-		Matrix44 rotation;
-		rotation.Set
-		   (0, 0, 0, 0,
-			0, 0, 0, 0,
-			0, 0, 0, 0,
-			0, 0, 0, 0);
+        projection_matrix.Set
+           (2/(right-left), 0, 0, -(right+left)/(right-left),
+            0, (2)/(top-bottom), 0, -(bottom+top)/(bottom-top),
+            0, 0, 2/(near_plane-far_plane), -(near_plane+far_plane)/(near_plane-far_plane),
+            0, 0, 0, 1);
 	}
 
 	UpdateViewProjectionMatrix();

@@ -10,7 +10,7 @@ public:
 	Mesh* mesh;
 	Matrix44 modelMatrix;
 
-	Entity::Entity(void);
-	Entity::Entity(Mesh* mesh_ptr, Matrix44 transform);
-	void Entity::Render(Image* framebuffer, Camera* camera, const Color& c);
+	Entity(void);
+	Entity(Mesh* mesh_ptr, Matrix44 transform);
+	void Render(Image* framebuffer, Camera* camera, const Color& c);
 };
