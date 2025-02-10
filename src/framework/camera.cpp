@@ -87,11 +87,10 @@ void Camera::LookAt(const Vector3& eye, const Vector3& center, const Vector3& up
 
 void Camera::UpdateViewMatrix()
 {
-       Vector3 zc = (eye - center).Normalize();          // Forward vector (camera looks towards -Z)
-       Vector3 xc = (up.Cross(zc)).Normalize();          // Right vector (+X)
-       Vector3 yc = (zc.Cross(xc)).Normalize();          // True Up vector (+Y)
+       Vector3 zc = (eye - center).Normalize();
+       Vector3 xc = (up.Cross(zc)).Normalize();
+       Vector3 yc = (zc.Cross(xc)).Normalize();
 
-       // Set view matrix (consistent with right-handed system)
        view_matrix.Set(
            xc.x, xc.y, xc.z, -xc.Dot(eye),
            yc.x, yc.y, yc.z, -yc.Dot(eye),
@@ -170,4 +169,27 @@ void Camera::SetExampleProjectionMatrix()
 
 	glGetFloatv(GL_PROJECTION_MATRIX, projection_matrix.m );
 	glMatrixMode(GL_MODELVIEW);
+}
+
+void Camera::OrbitAroundAxis(const Vector3& axis, float radius, float speed, float seconds_elapsed)
+{
+    if (axis.Length() == 0) {
+        std::cout << "Error: Rotation axis cannot be zero." << std::endl;
+        return;
+    }
+
+    Vector3 normalizedAxis = axis;
+    normalizedAxis.Normalize();
+
+    // Keep the angle within [0, 2π] to avoid large values
+    float angle = fmod(speed * seconds_elapsed, 2.0f * 3.14159265f);
+
+    Matrix44 rotationMatrix;
+    rotationMatrix.SetRotation(angle, normalizedAxis);
+
+    Vector3 initialOffset(radius, 0, 0);  // Starting point of the orbit
+    Vector3 offset = rotationMatrix * initialOffset;
+
+    eye = center + offset;
+    UpdateViewMatrix();
 }

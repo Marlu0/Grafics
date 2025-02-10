@@ -16,10 +16,12 @@ public:
 	// Entity and camera
 	Camera camera;
 	Entity** entity;
-
-
-	int current_scene;
-
+    
+    //Interactivity
+    int current_property;
+    
+    void Interactivity(SDL_KeyboardEvent event);
+      
 	// Window
 
 	SDL_Window* window = nullptr;
@@ -33,6 +35,7 @@ public:
 	int mouse_state; // Tells which buttons are pressed
 	Vector2 mouse_position; // Last mouse position
 	Vector2 mouse_delta; // Mouse movement in the last frame
+    bool is_mouse_pressed;
 
 	void OnKeyPressed(SDL_KeyboardEvent event);
 	void OnMouseButtonDown(SDL_MouseButtonEvent event);
@@ -66,8 +69,4 @@ public:
 		SDL_GetWindowSize(window,&w,&h);
 		return Vector2(float(w), float(h));
 	}
-
-	void moveHarmonic(Entity* entity, float time, float speed, Vector3 axis);
-	void rotateEntity(Entity* entity, float seconds_elapsed, float speed, Vector3 axis);
-	void scaleEntity(Entity* entity, float time, float speed, Vector3 axis);
 };
