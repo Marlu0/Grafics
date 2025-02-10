@@ -17,6 +17,9 @@ public:
 	Camera camera;
 	Entity** entity;
 
+
+	int current_scene;
+
 	// Window
 
 	SDL_Window* window = nullptr;
@@ -63,4 +66,8 @@ public:
 		SDL_GetWindowSize(window,&w,&h);
 		return Vector2(float(w), float(h));
 	}
+
+	void moveHarmonic(Entity* entity, float time, float speed, Vector3 axis);
+	void rotateEntity(Entity* entity, float seconds_elapsed, float speed, Vector3 axis);
+	void scaleEntity(Entity* entity, float time, float speed, Vector3 axis);
 };

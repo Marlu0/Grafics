@@ -426,7 +426,47 @@ void Image::DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2
 	DrawLineDDA(p1.x, p1.y, p2.x, p2.y, borderColor);
 	DrawLineDDA(p2.x, p2.y, p0.x, p0.y, borderColor);
 }
+/*
+void Image::DrawTriangleInterpolated(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& c0, const Color& c1, const Color& c2) {
+	// Encuentra los límites del triángulo
+	int minY = std::min({ p0.y, p1.y, p2.y });
+	int maxY = std::max({ p0.y, p1.y, p2.y });
+	// Limita los límites a las dimensiones de la imagen
+	minY = std::max(0, minY);
+	maxY = std::min(static_cast<int>(height) - 1, maxY);
 
+	// Matriz de transformación de coordenadas baricéntricas a coordenadas de pantalla
+	Matrix44 m;
+	m.m[0] = p0.x; m.m[4] = p1.x; m.m[8] = p2.x; m.m[12] = 0;
+	m.m[1] = p0.y; m.m[5] = p1.y; m.m[9] = p2.y; m.m[13] = 0;
+	m.m[2] = 1;    m.m[6] = 1;    m.m[10] = 1;    m.m[14] = 0;
+	m.m[3] = 0;    m.m[7] = 0;    m.m[11] = 0;    m.m[15] = 1;
+
+	// Inversa de la matriz m
+	Matrix44 invM = m.Inverse();
+
+	// Rellena el triángulo usando interpolación baricéntrica
+	for (int y = minY; y <= maxY; ++y) {
+		for (int x = 0; x < width; ++x) {
+			Vector3 screenPos(x, y, 1);
+			Vector3 barycentricCoords = invM * screenPos;
+
+			// Normaliza las coordenadas baricéntricas
+			float sum = barycentricCoords.x + barycentricCoords.y + barycentricCoords.z;
+			barycentricCoords.x /= sum;
+			barycentricCoords.y /= sum;
+			barycentricCoords.z /= sum;
+
+			// Asegúrate de que las coordenadas estén en el rango [0,1]
+			barycentricCoords.Clamp(0.0f, 1.0f);
+
+			// Interpola el color
+			Color c = c0 * barycentricCoords.x + c1 * barycentricCoords.y + c2 * barycentricCoords.z;
+			SetPixel(x, y, c);
+		}
+	}
+}
+*/
 #ifndef IGNORE_LAMBDAS
 
 // You can apply and algorithm for two images and store the result in the first one
