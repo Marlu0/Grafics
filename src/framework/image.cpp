@@ -309,37 +309,6 @@ bool Image::SaveTGA(const char* filename)
 	return true;
 }
 
-
-
-// Draw Rectangle
-void Image::DrawRect(int x, int y, int w, int h, const Color& c)
-{
-
-	for (int i = 0; i < w; ++i) {
-		SetPixel(x + i, y, c);
-		SetPixel(x + i, y + h - 1, c);
-	}
-
-	for (int j = 0; j < h; ++j) {
-		SetPixel(x, y + j, c);
-		SetPixel(x + w - 1, y + j, c);
-	}
-}
-void Image::DrawRect(int x, int y, int w, int h, const Color& borderColor, int borderWidth, bool isFilled, const Color& fillColor)
-{
-	for (int j = 0; j < std::min(borderWidth, std::min(w, h)); ++j) {
-		DrawRect(x + j, y + j, w - j * 2, h - j * 2, borderColor);
-	}
-	if (isFilled)
-	{
-		for (int j = borderWidth; j < h - borderWidth; ++j) {
-			for (int i = borderWidth; i < w - borderWidth; ++i) {
-				SetPixel(x + i, y + j, fillColor);
-			}
-		}
-	}
-}
-
 // Draw Line using DDA Algorithm
 void Image::DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c)
 {
@@ -371,27 +340,33 @@ void Image::DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c)
 
 // Draw Triangle
 void Image::ScanLineDDA(int x0, int y0, int x1, int y1, std::vector<Cell>& table) {
-	if (y0 == y1) return; // Skip horizontal lines
-
-	// Ensure y0 < y1
-	if (y0 > y1) {
-		std::swap(x0, x1);
-		std::swap(y0, y1);
-	}
-
+	// Calculate dx and dy
 	int dx = x1 - x0;
 	int dy = y1 - y0;
-	float slope = static_cast<float>(dx) / dy;
 
-	float x = x0;
-	for (int y = y0; y <= y1; ++y) {
-		if (y >= 0 && y < table.size()) {
-			table[y].minX = std::min(table[y].minX, static_cast<int>(x));
-			table[y].maxX = std::max(table[y].maxX, static_cast<int>(x));
-		}
-		x += slope;
+	// Compute the largest leg d
+	int d = std::max(std::abs(dx), std::abs(dy));
+
+	// Compute the direction step vector v
+	double vx = static_cast<double>(dx) / d;
+	double vy = static_cast<double>(dy) / d;
+
+	// Starting point
+	double x = x0;
+	double y = y0;
+
+	// Iterate d times to paint pixels
+	for (int i = 0; i <= d; ++i) {
+		// Paint the current pixel (flooring x and y)
+		table[y].minX = std::min(table[y].minX, static_cast<int>(x));
+		table[y].maxX = std::max(table[y].maxX, static_cast<int>(x));
+
+		// Increment x and y by the step vector
+		x += vx;
+		y += vy;
 	}
 }
+
 void Image::DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& borderColor, bool isFilled, const Color& fillColor)
 {
 	// Find the bounds of the triangle

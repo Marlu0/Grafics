@@ -69,6 +69,4 @@ public:
 	void UpdateViewProjectionMatrix();
 
 	Matrix44 GetViewProjectionMatrix();
-    
-    void OrbitAroundAxis(const Vector3& axis, float radius, float speed, float seconds_elapsed);
 };

@@ -9,6 +9,17 @@
 #include "image.h"
 #include "entity.h"
 
+enum class eProperty {
+	FOV,
+	NEAR_PLANE,
+	FAR_PLANE
+};
+
+enum class eScene {
+	STATIC,
+	ANIMATION,
+};
+
 class Application
 {
 public:
@@ -16,12 +27,10 @@ public:
 	// Entity and camera
 	Camera camera;
 	Entity** entity;
-    
-    //Interactivity
-    int current_property;
-    
-    void Interactivity(SDL_KeyboardEvent event);
-      
+
+	eProperty current_property;
+	eScene current_scene;
+
 	// Window
 
 	SDL_Window* window = nullptr;
@@ -31,11 +40,11 @@ public:
 	float time;
 
 	// Input
+	bool is_mouse_pressed;
 	const Uint8* keystate;
 	int mouse_state; // Tells which buttons are pressed
 	Vector2 mouse_position; // Last mouse position
 	Vector2 mouse_delta; // Mouse movement in the last frame
-    bool is_mouse_pressed;
 
 	void OnKeyPressed(SDL_KeyboardEvent event);
 	void OnMouseButtonDown(SDL_MouseButtonEvent event);
@@ -46,6 +55,7 @@ public:
 
 	// CPU Global framebuffer
 	Image framebuffer;
+	FloatImage zbuffer;
 
 	// Constructor and main methods
 	Application(const char* caption, int width, int height);
@@ -69,4 +79,8 @@ public:
 		SDL_GetWindowSize(window,&w,&h);
 		return Vector2(float(w), float(h));
 	}
+
+	void moveHarmonic(Entity* entity, float time, float speed, Vector3 axis);
+	void rotateEntity(Entity* entity, float seconds_elapsed, float speed, Vector3 axis);
+	void scaleEntity(Entity* entity, float time, float speed, Vector3 axis);
 };
