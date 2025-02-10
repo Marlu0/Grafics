@@ -19,6 +19,6 @@ public:
 	eRenderMode mode;
 
 	Entity(void);
-	Entity(Mesh* mesh_ptr, Matrix44 transform);
+	Entity(Mesh* mesh_ptr, Matrix44 transform, eRenderMode emode);
 	void Render(Image* framebuffer, Camera* camera, const Color& c);
 };

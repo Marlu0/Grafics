@@ -24,7 +24,6 @@ typedef struct sTriangleInfo {
 	Vector3 p1, p2, p3;
 	Vector3 uv1, uv2, uv3;
 	Color c1, c2, c3;
-	Image* imgPtr;
 } TriangleInfo;
 
 // A matrix of pixels

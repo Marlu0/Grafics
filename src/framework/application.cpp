@@ -18,7 +18,7 @@ Application::Application(const char* caption, int width, int height)
 
 	this->is_mouse_pressed = false;
 	this->framebuffer.Resize(w, h);
-	this->entity = (Entity**)malloc(sizeof(Entity*) * 3);
+	this->entity = (Entity**)malloc(sizeof(Entity*) * 4);
 }
 
 Application::~Application()
@@ -47,6 +47,12 @@ void Application::Init(void)
 			0, 0, 2, 0,
 			0, 0, 0, 1);
 
+	Matrix44 M4;
+	M4.Set( 4, 0, 0, 0.5,
+			0, 4, 0, -0.5,
+			0, 0, 4, 0,
+			0, 0, 0, 1);
+
 	Mesh* mesh1 = new Mesh();
 	mesh1->LoadOBJ("../res/meshes/anna.obj");
 
@@ -56,17 +62,21 @@ void Application::Init(void)
 	Mesh* mesh3 = new Mesh();
 	mesh3->LoadOBJ("../res/meshes/lee.obj");
 
+	Mesh* mesh4 = new Mesh();
+	mesh4->LoadOBJ("../res/meshes/lee.obj");
+
 	camera = Camera();
 	camera.LookAt(Vector3(0, 0, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
-	camera.SetPerspective(3.14 / 2, 1.6, 0.1, 100);  // Adjust near/far planes
+	camera.SetPerspective(3.14 / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
 
     //camera.SetOrthographic(-1,1,1,-1,-1, 1);
-	entity[0] = new Entity(mesh1, M1);
-	entity[1] = new Entity(mesh2, M2);
-	entity[2] = new Entity(mesh3, M3);
+	entity[0] = new Entity(mesh1, M1, eRenderMode::POINTCLOUD);
+	entity[1] = new Entity(mesh2, M2, eRenderMode::POINTCLOUD);
+	entity[2] = new Entity(mesh3, M3, eRenderMode::POINTCLOUD);
+	entity[3] = new Entity(mesh4, M4, eRenderMode::POINTCLOUD);
 
-	current_property = 1;
-	current_scene = 2;
+	current_property = eProperty::FOV;
+	current_scene = eScene::STATIC;
 }
 
 // Render one frame
@@ -74,12 +84,15 @@ void Application::Render(void)
 {
 	framebuffer.Fill(Color::BLACK);
 
-	if (current_scene == 2) {
+	if (current_scene == eScene::ANIMATION) {
 		entity[0]->Render(&framebuffer, &camera, Color::GREEN);
+		entity[1]->Render(&framebuffer, &camera, Color::BLUE);
 		entity[2]->Render(&framebuffer, &camera, Color::YELLOW);
 	}
 	
-	entity[1]->Render(&framebuffer, &camera, Color::BLUE);
+	else if (current_scene == eScene::STATIC) {
+		entity[3]->Render(&framebuffer, &camera, Color::PURPLE);
+	}
 
 	framebuffer.Render();
 }
@@ -114,7 +127,7 @@ void Application::Update(float seconds_elapsed)
 		camera.UpdateViewMatrix();
 
 	}
-	if (current_scene == 2) {
+	if (current_scene == eScene::ANIMATION) {
 		moveHarmonic(entity[0], time, 0.5, Vector3(0, 1, 0));
 		rotateEntity(entity[1], seconds_elapsed, 1, Vector3(0.5, 0, 0));
 		scaleEntity(entity[2], time, 0.5, Vector3(2, 2, 2));
@@ -129,59 +142,48 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 	case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
 
 	case SDLK_MINUS:
-		if (current_property == 1) {
-			if (camera.near_plane - 2 > 0) {
-				camera.near_plane -= 2;
-				camera.UpdateProjectionMatrix();
-				camera.UpdateViewProjectionMatrix();
-			}
-		}
-		else if (current_property == 2) {
-			if (camera.far_plane - 2 > 0) {
-				camera.far_plane -= 2;
-				camera.UpdateProjectionMatrix();
-				camera.UpdateViewProjectionMatrix();
-			}
-		}
-		else if (current_property == 3) {
-			if (camera.fov - 3.14 / 3 > 0)
-				camera.fov -= 3.14 / 3;
+	case SDLK_KP_MINUS:
+		if (current_property == eProperty::NEAR_PLANE) {
+			camera.near_plane = std::max(0.1f, static_cast<float>(camera.near_plane - 0.1));
 			camera.UpdateProjectionMatrix();
-			camera.UpdateViewProjectionMatrix();
-			std::cout << camera.fov;
+		}
+		else if (current_property == eProperty::FAR_PLANE) {
+			camera.far_plane = std::max(static_cast<float>(camera.near_plane), static_cast<float>(camera.far_plane - 0.1));
+			camera.UpdateProjectionMatrix();
+		}
+		else if (current_property == eProperty::FOV) {
+			camera.fov = std::min(PI, camera.fov + (PI / 12));
+			camera.UpdateProjectionMatrix();
 		}
 		break;
 
 	case SDLK_PLUS:
-		if (current_property == 1) {
-			camera.near_plane += 2;
+	case SDLK_KP_PLUS:
+		if (current_property == eProperty::NEAR_PLANE) {
+			camera.near_plane = std::min(static_cast<float>(camera.far_plane), static_cast<float>(camera.near_plane + 0.1));
 			camera.UpdateProjectionMatrix();
-			camera.UpdateViewProjectionMatrix();
 		}
-		else if (current_property == 2) {
-			camera.far_plane += 2;
+		else if (current_property == eProperty::FAR_PLANE) {
+			camera.far_plane = std::min(200.0f, static_cast<float>(camera.far_plane + 0.1));
 			camera.UpdateProjectionMatrix();
-			camera.UpdateViewProjectionMatrix();
 		}
-		else if (current_property == 3) {
-			camera.fov += 3.14 / 3;
+		else if (current_property == eProperty::FOV) {
+			camera.fov = std::max(PI / 12, camera.fov - (PI / 12));
 			camera.UpdateProjectionMatrix();
-			camera.UpdateViewProjectionMatrix();
 		}
 
 		break;
 
 	case SDLK_v:
-		current_property = 3;
+		current_property = eProperty::FOV;
 		break;
 
-
 	case SDLK_n:
-		current_property = 1;
+		current_property = eProperty::NEAR_PLANE;
 		break;
 
 	case SDLK_f:
-		current_property = 2;
+		current_property = eProperty::FAR_PLANE;
 		break;
 
 	}

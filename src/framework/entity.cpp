@@ -3,12 +3,14 @@
 Entity::Entity() {
 	mesh = nullptr;
 	modelMatrix.SetIdentity();
+	mode = eRenderMode::POINTCLOUD;
 }
 
-Entity::Entity(Mesh* mesh_ptr, Matrix44 transform)
+Entity::Entity(Mesh* mesh_ptr, Matrix44 transform, eRenderMode emode)
 {
 	mesh = mesh_ptr; 
 	modelMatrix = transform;
+	mode = emode;
 }
 
 void Entity::Render(Image* framebuffer, Camera* camera, const Color& c)
@@ -30,8 +32,22 @@ void Entity::Render(Image* framebuffer, Camera* camera, const Color& c)
 			Vector2 screenPos1 = Vector2((clipPos1.x + 1) / 2 * framebuffer->width, (clipPos1.y + 1) / 2 * framebuffer->height);
 			Vector2 screenPos2 = Vector2((clipPos2.x + 1) / 2 * framebuffer->width, (clipPos2.y + 1) / 2 * framebuffer->height);
 			Vector2 screenPos3 = Vector2((clipPos3.x + 1) / 2 * framebuffer->width, (clipPos3.y + 1) / 2 * framebuffer->height);
+			
+			if (mode == eRenderMode::POINTCLOUD)
+			{
+				framebuffer->SetPixel(screenPos1.x, screenPos1.y, c);
+				framebuffer->SetPixel(screenPos2.x, screenPos2.y, c);
+				framebuffer->SetPixel(screenPos3.x, screenPos3.y, c);
+			}
+			else if (mode == eRenderMode::WIREFRAME)
+			{
+				framebuffer->DrawTriangle(screenPos1, screenPos2, screenPos3, c, false, c);
+			}
+			else if (mode == eRenderMode::TRIANGLES)
+			{
+				framebuffer->DrawTriangle(screenPos1, screenPos2, screenPos3, c, true, c);
+			}
 				
-			framebuffer->DrawTriangle(screenPos1, screenPos2, screenPos3, c, false, c);
 
 		}
 	}
