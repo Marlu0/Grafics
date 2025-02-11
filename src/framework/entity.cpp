@@ -29,10 +29,13 @@ void Entity::Render(Image* framebuffer, Camera* camera, const Color& c)
 			abs(clipPos2.x) <= 1 && abs(clipPos2.y) <= 1 && abs(clipPos2.z) <= 1 &&
 			abs(clipPos3.x) <= 1 && abs(clipPos3.y) <= 1 && abs(clipPos3.z) <= 1)
 		{
-			Vector2 screenPos1 = Vector2((clipPos1.x + 1) / 2 * framebuffer->width, (clipPos1.y + 1) / 2 * framebuffer->height);
-			Vector2 screenPos2 = Vector2((clipPos2.x + 1) / 2 * framebuffer->width, (clipPos2.y + 1) / 2 * framebuffer->height);
-			Vector2 screenPos3 = Vector2((clipPos3.x + 1) / 2 * framebuffer->width, (clipPos3.y + 1) / 2 * framebuffer->height);
+			Vector3 screenPos1 = Vector3((clipPos1.x + 1) / 2 * framebuffer->width, (clipPos1.y + 1) / 2 * framebuffer->height, clipPos1.z);
+			Vector3 screenPos2 = Vector3((clipPos2.x + 1) / 2 * framebuffer->width, (clipPos2.y + 1) / 2 * framebuffer->height, clipPos2.z);
+			Vector3 screenPos3 = Vector3((clipPos3.x + 1) / 2 * framebuffer->width, (clipPos3.y + 1) / 2 * framebuffer->height, clipPos3.z);
 			
+            TriangleInfo triangle = {screenPos1, screenPos2, screenPos3, Vector3(0,0,0), Vector3(0,0,0), Vector3(0,0,0), Color::RED, Color::BLUE, Color::GREEN};
+            
+            
 			if (mode == eRenderMode::POINTCLOUD)
 			{
 				framebuffer->SetPixel(screenPos1.x, screenPos1.y, c);

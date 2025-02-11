@@ -70,10 +70,10 @@ void Application::Init(void)
 	camera.SetPerspective(3.14 / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
 
     //camera.SetOrthographic(-1,1,1,-1,-1, 1);
-	entity[0] = new Entity(mesh1, M1, eRenderMode::POINTCLOUD);
+	entity[0] = new Entity(mesh1, M1, eRenderMode::TRIANGLES);
 	entity[1] = new Entity(mesh2, M2, eRenderMode::POINTCLOUD);
 	entity[2] = new Entity(mesh3, M3, eRenderMode::POINTCLOUD);
-	entity[3] = new Entity(mesh4, M4, eRenderMode::POINTCLOUD);
+	entity[3] = new Entity(mesh4, M4, eRenderMode::WIREFRAME);
 
 	current_property = eProperty::FOV;
 	current_scene = eScene::STATIC;

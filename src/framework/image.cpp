@@ -367,7 +367,7 @@ void Image::ScanLineDDA(int x0, int y0, int x1, int y1, std::vector<Cell>& table
 	}
 }
 
-void Image::DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& borderColor, bool isFilled, const Color& fillColor)
+void Image::DrawTriangle(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& borderColor, bool isFilled, const Color& fillColor)
 {
 	// Find the bounds of the triangle
 	int minY = std::min({ p0.y, p1.y, p2.y });
@@ -400,6 +400,47 @@ void Image::DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2
 	DrawLineDDA(p0.x, p0.y, p1.x, p1.y, borderColor);
 	DrawLineDDA(p1.x, p1.y, p2.x, p2.y, borderColor);
 	DrawLineDDA(p2.x, p2.y, p0.x, p0.y, borderColor);
+}
+
+void Image::DrawTriangleInterpolated(const Vector3 &p0, const Vector3 &p1, const Vector3 &p2, const Color &c0, const Color &c1, const Color &c2){
+    Vector2 P0(p0.x, p0.y);
+    Vector2 P1(p1.x, p1.y);
+    Vector2 P2(p2.x, p2.y);
+    
+    Vector2 V01 = P1 - P0;
+    Vector2 V02 = P2 - P0;
+    
+    float area = p2.Cross(p0).Length()/2;
+    
+    
+    // Find the bounds of the triangle
+    int minY = std::min({ p0.y, p1.y, p2.y });
+    int maxY = std::max({ p0.y, p1.y, p2.y });
+
+    // Clamp the bounds to the image dimensions
+    minY = std::max(0, minY);
+    maxY = std::min(static_cast<int>(height) - 1, maxY);
+
+    // Fill the triangle if required
+    
+        // Populate the AET using ScanLineDDA
+
+        // Create and initialize the Active Edge Table (AET)
+    
+    std::vector<Cell> aet(maxY + 1);
+    ScanLineDDA(p0.x, p0.y, p1.x, p1.y, aet);
+    ScanLineDDA(p1.x, p1.y, p2.x, p2.y, aet);
+    ScanLineDDA(p2.x, p2.y, p0.x, p0.y, aet);
+    for (int y = minY; y <= maxY; ++y) {
+        if (aet[y].minX <= aet[y].maxX) {
+            for (int x = aet[y].minX; x <= aet[y].maxX; ++x) {
+                
+                //SetPixel(x, y, fillColor);
+                
+            }
+        }
+    }
+    
 }
 
 #ifndef IGNORE_LAMBDAS
