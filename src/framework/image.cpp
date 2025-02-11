@@ -331,7 +331,7 @@ void Image::DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c)
 	for (int i = 0; i <= d; ++i) {
 		// Paint the current pixel (flooring x and y)
 		SetPixel(static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y)), c);
-
+	
 		// Increment x and y by the step vector
 		x += vx;
 		y += vy;
@@ -367,11 +367,11 @@ void Image::ScanLineDDA(int x0, int y0, int x1, int y1, std::vector<Cell>& table
 	}
 }
 
-void Image::DrawTriangle(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Color& borderColor, bool isFilled, const Color& fillColor)
+void Image::DrawTriangle(const sTriangleInfo& triangle, bool isFilled, const Color& c)
 {
 	// Find the bounds of the triangle
-	int minY = std::min({ p0.y, p1.y, p2.y });
-	int maxY = std::max({ p0.y, p1.y, p2.y });
+	int minY = std::min({ triangle.p1.y, triangle.p2.y, triangle.p3.y });
+	int maxY = std::max({ triangle.p1.y, triangle.p2.y, triangle.p3.y });
 
 	// Clamp the bounds to the image dimensions
 	minY = std::max(0, minY);
@@ -384,63 +384,57 @@ void Image::DrawTriangle(const Vector3& p0, const Vector3& p1, const Vector3& p2
 		// Create and initialize the Active Edge Table (AET)
 		std::vector<Cell> aet(maxY + 1);
 
-		ScanLineDDA(p0.x, p0.y, p1.x, p1.y, aet);
-		ScanLineDDA(p1.x, p1.y, p2.x, p2.y, aet);
-		ScanLineDDA(p2.x, p2.y, p0.x, p0.y, aet);
+		ScanLineDDA(triangle.p1.x, triangle.p1.y, triangle.p2.x, triangle.p2.y, aet);
+		ScanLineDDA(triangle.p2.x, triangle.p2.y, triangle.p3.x, triangle.p3.y, aet);
+		ScanLineDDA(triangle.p3.x, triangle.p3.y, triangle.p1.x, triangle.p1.y, aet);
 		for (int y = minY; y <= maxY; ++y) {
 			if (aet[y].minX <= aet[y].maxX) {
 				for (int x = aet[y].minX; x <= aet[y].maxX; ++x) {
-					SetPixel(x, y, fillColor);
+					SetPixel(x, y, c);
 				}
 			}
 		}
 	}
 
 	// Draw the border
-	DrawLineDDA(p0.x, p0.y, p1.x, p1.y, borderColor);
-	DrawLineDDA(p1.x, p1.y, p2.x, p2.y, borderColor);
-	DrawLineDDA(p2.x, p2.y, p0.x, p0.y, borderColor);
+	DrawLineDDA(triangle.p1.x, triangle.p1.y, triangle.p2.x, triangle.p2.y, c);
+	DrawLineDDA(triangle.p2.x, triangle.p2.y, triangle.p3.x, triangle.p3.y, c);
+	DrawLineDDA(triangle.p3.x, triangle.p3.y, triangle.p1.x, triangle.p1.y, c);
 }
 
-void Image::DrawTriangleInterpolated(const Vector3 &p0, const Vector3 &p1, const Vector3 &p2, const Color &c0, const Color &c1, const Color &c2){
-    Vector2 P0(p0.x, p0.y);
-    Vector2 P1(p1.x, p1.y);
-    Vector2 P2(p2.x, p2.y);
-    
-    Vector2 V01 = P1 - P0;
-    Vector2 V02 = P2 - P0;
-    
-    float area = p2.Cross(p0).Length()/2;
-    
-    
-    // Find the bounds of the triangle
-    int minY = std::min({ p0.y, p1.y, p2.y });
-    int maxY = std::max({ p0.y, p1.y, p2.y });
+void Image::DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer){
+	// Find the bounds of the triangle
+	int minY = std::min({ triangle.p1.y, triangle.p2.y, triangle.p3.y });
+	int maxY = std::max({ triangle.p1.y, triangle.p2.y, triangle.p3.y });
 
-    // Clamp the bounds to the image dimensions
-    minY = std::max(0, minY);
-    maxY = std::min(static_cast<int>(height) - 1, maxY);
+	// Clamp the bounds to the image dimensions
+	minY = std::max(0, minY);
+	maxY = std::min(static_cast<int>(height) - 1, maxY);
 
-    // Fill the triangle if required
-    
-        // Populate the AET using ScanLineDDA
+	std::vector<Cell> aet(maxY + 1);
 
-        // Create and initialize the Active Edge Table (AET)
-    
-    std::vector<Cell> aet(maxY + 1);
-    ScanLineDDA(p0.x, p0.y, p1.x, p1.y, aet);
-    ScanLineDDA(p1.x, p1.y, p2.x, p2.y, aet);
-    ScanLineDDA(p2.x, p2.y, p0.x, p0.y, aet);
-    for (int y = minY; y <= maxY; ++y) {
-        if (aet[y].minX <= aet[y].maxX) {
-            for (int x = aet[y].minX; x <= aet[y].maxX; ++x) {
-                
-                //SetPixel(x, y, fillColor);
-                
-            }
-        }
-    }
-    
+	ScanLineDDA(triangle.p1.x, triangle.p1.y, triangle.p2.x, triangle.p2.y, aet);
+	ScanLineDDA(triangle.p2.x, triangle.p2.y, triangle.p3.x, triangle.p3.y, aet);
+	ScanLineDDA(triangle.p3.x, triangle.p3.y, triangle.p1.x, triangle.p1.y, aet);
+	for (int y = minY; y <= maxY; ++y) {
+		if (aet[y].minX <= aet[y].maxX) {
+			for (int x = aet[y].minX; x <= aet[y].maxX; ++x)
+			{
+				float Aa = (((triangle.p1.x - x) * (triangle.p2.y - y)) - ((triangle.p1.y - y) * (triangle.p2.x - x))) / 2.0f;
+				float Ab = (((triangle.p2.x - x) * (triangle.p3.y - y)) - ((triangle.p2.y - y) * (triangle.p3.x - x))) / 2.0f;
+				float Ac = (((triangle.p3.x - x) * (triangle.p1.y - y)) - ((triangle.p3.y - y) * (triangle.p1.x - x))) / 2.0f;
+				float Aabc = abs((triangle.p2.x - triangle.p1.x) * (triangle.p3.y - triangle.p1.y) - (triangle.p2.y - triangle.p1.y) * (triangle.p3.x - triangle.p1.x)) * 0.5f;
+				
+				float alpha = Aa / Aabc;
+				float beta = Ab / Aabc;
+				float gamma = Ac / Aabc;
+
+				Color finalColor = (triangle.c1 * alpha) + (triangle.c2 * beta) + (triangle.c3 * gamma);
+				
+				SetPixel(x, y, finalColor);
+			}
+		}
+	}
 }
 
 #ifndef IGNORE_LAMBDAS

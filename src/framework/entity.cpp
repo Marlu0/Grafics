@@ -13,7 +13,7 @@ Entity::Entity(Mesh* mesh_ptr, Matrix44 transform, eRenderMode emode)
 	mode = emode;
 }
 
-void Entity::Render(Image* framebuffer, Camera* camera, const Color& c)
+void Entity::Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, const Color& c)
 {
 	bool negZ = false;
 	std::vector<Vector3> vertices = mesh->GetVertices();
@@ -35,7 +35,6 @@ void Entity::Render(Image* framebuffer, Camera* camera, const Color& c)
 			
             TriangleInfo triangle = {screenPos1, screenPos2, screenPos3, Vector3(0,0,0), Vector3(0,0,0), Vector3(0,0,0), Color::RED, Color::BLUE, Color::GREEN};
             
-            
 			if (mode == eRenderMode::POINTCLOUD)
 			{
 				framebuffer->SetPixel(screenPos1.x, screenPos1.y, c);
@@ -44,13 +43,16 @@ void Entity::Render(Image* framebuffer, Camera* camera, const Color& c)
 			}
 			else if (mode == eRenderMode::WIREFRAME)
 			{
-				framebuffer->DrawTriangle(screenPos1, screenPos2, screenPos3, c, false, c);
+				framebuffer->DrawTriangle(triangle, false, c);
 			}
 			else if (mode == eRenderMode::TRIANGLES)
 			{
-				framebuffer->DrawTriangle(screenPos1, screenPos2, screenPos3, c, true, c);
+				framebuffer->DrawTriangle(triangle, true, c);
 			}
-				
+			else if (mode == eRenderMode::TRIANGLES_INTERPOLATED)
+			{
+				framebuffer->DrawTriangleInterpolated(triangle, zbuffer);
+			}
 
 		}
 	}

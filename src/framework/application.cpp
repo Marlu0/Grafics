@@ -72,8 +72,8 @@ void Application::Init(void)
     //camera.SetOrthographic(-1,1,1,-1,-1, 1);
 	entity[0] = new Entity(mesh1, M1, eRenderMode::TRIANGLES);
 	entity[1] = new Entity(mesh2, M2, eRenderMode::POINTCLOUD);
-	entity[2] = new Entity(mesh3, M3, eRenderMode::POINTCLOUD);
-	entity[3] = new Entity(mesh4, M4, eRenderMode::WIREFRAME);
+	entity[2] = new Entity(mesh3, M3, eRenderMode::TRIANGLES_INTERPOLATED);
+	entity[3] = new Entity(mesh4, M4, eRenderMode::TRIANGLES_INTERPOLATED);
 
 	current_property = eProperty::FOV;
 	current_scene = eScene::STATIC;
@@ -85,13 +85,13 @@ void Application::Render(void)
 	framebuffer.Fill(Color::BLACK);
 
 	if (current_scene == eScene::ANIMATION) {
-		entity[0]->Render(&framebuffer, &camera, Color::GREEN);
-		entity[1]->Render(&framebuffer, &camera, Color::BLUE);
-		entity[2]->Render(&framebuffer, &camera, Color::YELLOW);
+		entity[0]->Render(&framebuffer, &zbuffer, &camera, Color::GREEN);
+		entity[1]->Render(&framebuffer, &zbuffer, &camera, Color::YELLOW);
+		entity[2]->Render(&framebuffer, &zbuffer, &camera, Color::BLUE);
 	}
 	
 	else if (current_scene == eScene::STATIC) {
-		entity[3]->Render(&framebuffer, &camera, Color::PURPLE);
+		entity[3]->Render(&framebuffer, &zbuffer, &camera, Color::PURPLE);
 	}
 
 	framebuffer.Render();
@@ -133,13 +133,21 @@ void Application::Update(float seconds_elapsed)
 		scaleEntity(entity[2], time, 0.5, Vector3(2, 2, 2));
 	}
 }
- 
+
 //keyboard press event 
 void Application::OnKeyPressed(SDL_KeyboardEvent event)
 {
 	// KEY CODES: https://wiki.libsdl.org/SDL2/SDL_Keycode
 	switch (event.keysym.sym) {
 	case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
+
+	case SDLK_1:
+		current_scene = eScene::STATIC;
+		break;
+
+	case SDLK_2:
+		current_scene = eScene::ANIMATION;
+		break;
 
 	case SDLK_MINUS:
 	case SDLK_KP_MINUS:
@@ -171,7 +179,6 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 			camera.fov = std::max(PI / 12, camera.fov - (PI / 12));
 			camera.UpdateProjectionMatrix();
 		}
-
 		break;
 
 	case SDLK_v:
@@ -185,7 +192,6 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 	case SDLK_f:
 		current_property = eProperty::FAR_PLANE;
 		break;
-
 	}
 }
 

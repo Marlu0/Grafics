@@ -20,5 +20,5 @@ public:
 
 	Entity(void);
 	Entity(Mesh* mesh_ptr, Matrix44 transform, eRenderMode emode);
-	void Render(Image* framebuffer, Camera* camera, const Color& c);
+	void Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, const Color& c);
 };
