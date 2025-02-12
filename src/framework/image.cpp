@@ -428,10 +428,19 @@ void Image::DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* 
 				float alpha = Aa / Aabc;
 				float beta = Ab / Aabc;
 				float gamma = Ac / Aabc;
-
-				Color finalColor = (triangle.c1 * alpha) + (triangle.c2 * beta) + (triangle.c3 * gamma);
-				
-				SetPixel(x, y, finalColor);
+                
+                float z_interpolated = alpha*triangle.p1.z + beta*triangle.p2.z + gamma*triangle.p3.z;
+                
+                if (zbuffer->GetPixel(x, y) > z_interpolated){
+                    
+                    Color finalColor = (triangle.c1 * alpha) + (triangle.c2 * beta) + (triangle.c3 * gamma);
+                    
+                    SetPixel(x, y, finalColor);
+                    //std::cout << "Z-buffer at (" << beta << "," << gamma << "): " << zbuffer->GetPixelRef(x, y)
+                              //<< " | Interpolated Z: " << alpha << std::endl; debug messages
+                    
+                    zbuffer->SetPixel(x, y, z_interpolated);
+                }
 			}
 		}
 	}

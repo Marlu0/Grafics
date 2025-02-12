@@ -19,6 +19,7 @@ Application::Application(const char* caption, int width, int height)
 	this->is_mouse_pressed = false;
 	this->framebuffer.Resize(w, h);
 	this->entity = (Entity**)malloc(sizeof(Entity*) * 4);
+    this->zbuffer = FloatImage(width, height);
 }
 
 Application::~Application()
@@ -68,6 +69,8 @@ void Application::Init(void)
 	camera = Camera();
 	camera.LookAt(Vector3(0, 0, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
 	camera.SetPerspective(3.14 / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
+    
+    zbuffer.Fill(1000.0f);
 
     //camera.SetOrthographic(-1,1,1,-1,-1, 1);
 	entity[0] = new Entity(mesh1, M1, eRenderMode::TRIANGLES);
@@ -95,6 +98,7 @@ void Application::Render(void)
 	}
 
 	framebuffer.Render();
+    zbuffer.Fill(1000.0f);
 }
 
 // Called after render
