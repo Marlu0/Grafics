@@ -402,7 +402,7 @@ void Image::DrawTriangle(const sTriangleInfo& triangle, bool isFilled, const Col
 	DrawLineDDA(triangle.p3.x, triangle.p3.y, triangle.p1.x, triangle.p1.y, c);
 }
 
-void Image::DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer){
+void Image::DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer, Image* texture){
 	// Find the bounds of the triangle
 	int minY = std::min({ triangle.p1.y, triangle.p2.y, triangle.p3.y });
 	int maxY = std::max({ triangle.p1.y, triangle.p2.y, triangle.p3.y });
@@ -420,26 +420,45 @@ void Image::DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* 
 		if (aet[y].minX <= aet[y].maxX) {
 			for (int x = aet[y].minX; x <= aet[y].maxX; ++x)
 			{
-				float Aa = (((triangle.p1.x - x) * (triangle.p2.y - y)) - ((triangle.p1.y - y) * (triangle.p2.x - x))) / 2.0f;
-				float Ab = (((triangle.p2.x - x) * (triangle.p3.y - y)) - ((triangle.p2.y - y) * (triangle.p3.x - x))) / 2.0f;
-				float Ac = (((triangle.p3.x - x) * (triangle.p1.y - y)) - ((triangle.p3.y - y) * (triangle.p1.x - x))) / 2.0f;
+                
+                 float Aa = abs(((triangle.p1.x - x) * (triangle.p2.y - y)) - ((triangle.p1.y - y) * (triangle.p2.x - x))) / 2.0f;
+				float Ab = abs(((triangle.p2.x - x) * (triangle.p3.y - y)) - ((triangle.p2.y - y) * (triangle.p3.x - x))) / 2.0f;
+				float Ac = abs(((triangle.p3.x - x) * (triangle.p1.y - y)) - ((triangle.p3.y - y) * (triangle.p1.x - x))) / 2.0f;
 				float Aabc = abs((triangle.p2.x - triangle.p1.x) * (triangle.p3.y - triangle.p1.y) - (triangle.p2.y - triangle.p1.y) * (triangle.p3.x - triangle.p1.x)) * 0.5f;
-				
+                
 				float alpha = Aa / Aabc;
 				float beta = Ab / Aabc;
 				float gamma = Ac / Aabc;
                 
+                
+                
                 float z_interpolated = alpha*triangle.p1.z + beta*triangle.p2.z + gamma*triangle.p3.z;
+                
+                float u = alpha*triangle.uv1.x + beta*triangle.uv2.x + gamma*triangle.uv3.x;
+                float v = alpha*triangle.uv1.y + beta*triangle.uv2.y + gamma*triangle.uv3.y;
+                
+                Vector2 uv(u, v);
+                float text_x = u*texture->width - 1;
+                float text_y = v*texture->width - 1;
+                
+                Color tex_color = texture->GetPixelSafe(text_x, text_y);
+                
                 
                 if (zbuffer->GetPixel(x, y) > z_interpolated){
                     
-                    Color finalColor = (triangle.c1 * alpha) + (triangle.c2 * beta) + (triangle.c3 * gamma);
-                    
-                    SetPixel(x, y, finalColor);
-                    //std::cout << "Z-buffer at (" << beta << "," << gamma << "): " << zbuffer->GetPixelRef(x, y)
-                              //<< " | Interpolated Z: " << alpha << std::endl; debug messages
-                    
-                    zbuffer->SetPixel(x, y, z_interpolated);
+                    if (texture == nullptr){
+                        Color finalColor = (triangle.c1 * alpha) + (triangle.c2 * beta) + (triangle.c3 * gamma);
+                        
+                        SetPixel(x, y, finalColor);
+                        
+                        
+                        zbuffer->SetPixel(x, y, z_interpolated);
+                    }else{
+                        SetPixel(x, y, tex_color);
+                        
+                        zbuffer->SetPixel(x, y, z_interpolated);
+                        
+                    }
                 }
 			}
 		}

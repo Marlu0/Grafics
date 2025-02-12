@@ -6,24 +6,27 @@ Entity::Entity() {
 	mode = eRenderMode::POINTCLOUD;
 }
 
-Entity::Entity(Mesh* mesh_ptr, Matrix44 transform, eRenderMode emode)
+Entity::Entity(Mesh* mesh_ptr, Matrix44 transform, eRenderMode emode, Image* tex)
 {
 	mesh = mesh_ptr; 
 	modelMatrix = transform;
 	mode = emode;
+    texture = tex;
 }
 
 void Entity::Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, const Color& c)
 {
 	bool negZ = false;
 	std::vector<Vector3> vertices = mesh->GetVertices();
-
+    std::vector<Vector2> uvs = mesh->GetUVs();
 	for (int i=0; i<vertices.size(); i+=3)
 	{
 		Vector3 clipPos1 = camera->ProjectVector((modelMatrix * vertices[i]), negZ);
 		Vector3 clipPos2 = camera->ProjectVector((modelMatrix * vertices[i + 1]), negZ);
 		Vector3 clipPos3 = camera->ProjectVector((modelMatrix * vertices[i + 2]), negZ);
-
+        Vector2 uv1 = uvs[i];
+        Vector2 uv2 = uvs[i+1];
+        Vector2 uv3 = uvs[i+2];
 
 		if (abs(clipPos1.x) <= 1 && abs(clipPos1.y) <= 1 && abs(clipPos1.z) <= 1 &&
 			abs(clipPos2.x) <= 1 && abs(clipPos2.y) <= 1 && abs(clipPos2.z) <= 1 &&
@@ -33,7 +36,7 @@ void Entity::Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, con
 			Vector3 screenPos2 = Vector3((clipPos2.x + 1) / 2 * framebuffer->width, (clipPos2.y + 1) / 2 * framebuffer->height,(clipPos2.z + 1)/2 );
 			Vector3 screenPos3 = Vector3((clipPos3.x + 1) / 2 * framebuffer->width, (clipPos3.y + 1) / 2 * framebuffer->height, (clipPos3.z + 1)/2);
 			
-            TriangleInfo triangle = {screenPos1, screenPos2, screenPos3, Vector3(0,0,0), Vector3(0,0,0), Vector3(0,0,0), Color::RED, Color::BLUE, Color::GREEN};
+            TriangleInfo triangle = {screenPos1, screenPos2, screenPos3, uv1, uv2, uv3, Color::RED, Color::BLUE, Color::GREEN};
             
 			if (mode == eRenderMode::POINTCLOUD)
 			{
@@ -51,7 +54,7 @@ void Entity::Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, con
 			}
 			else if (mode == eRenderMode::TRIANGLES_INTERPOLATED)
 			{
-				framebuffer->DrawTriangleInterpolated(triangle, zbuffer);
+				framebuffer->DrawTriangleInterpolated(triangle, zbuffer, texture);
 			}
 
 		}

@@ -22,7 +22,7 @@ class Camera;
 
 typedef struct sTriangleInfo {
 	Vector3 p1, p2, p3;
-	Vector3 uv1, uv2, uv3;
+	Vector2 uv1, uv2, uv3;
 	Color c1, c2, c3;
 } TriangleInfo;
 
@@ -95,7 +95,7 @@ public:
 	};
 	void ScanLineDDA(int x0, int y0, int x1, int y1, std::vector<Cell>& table);
 	void DrawTriangle(const sTriangleInfo& triangle, bool isFilled, const Color& c);
-	void DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer);
+	void DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer, Image* texture);
 
 	// Used to easy code
 	#ifndef IGNORE_LAMBDAS

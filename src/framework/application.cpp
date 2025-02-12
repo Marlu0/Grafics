@@ -67,17 +67,23 @@ void Application::Init(void)
 	mesh4->LoadOBJ("../res/meshes/lee.obj");
 
 	camera = Camera();
-	camera.LookAt(Vector3(0, 0, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
+	camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
 	camera.SetPerspective(3.14 / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
     
     zbuffer.Fill(1000.0f);
-
+    
+    Image* T4 = new Image();
+    T4->LoadTGA("../res/textures/lee_color_specular.tga", true);
+    
+    
     //camera.SetOrthographic(-1,1,1,-1,-1, 1);
-	entity[0] = new Entity(mesh1, M1, eRenderMode::TRIANGLES);
-	entity[1] = new Entity(mesh2, M2, eRenderMode::POINTCLOUD);
-	entity[2] = new Entity(mesh3, M3, eRenderMode::TRIANGLES_INTERPOLATED);
-	entity[3] = new Entity(mesh4, M4, eRenderMode::TRIANGLES_INTERPOLATED);
-
+	entity[0] = new Entity(mesh1, M1, eRenderMode::TRIANGLES, nullptr);
+	entity[1] = new Entity(mesh2, M2, eRenderMode::POINTCLOUD, nullptr);
+	entity[2] = new Entity(mesh3, M3, eRenderMode::TRIANGLES_INTERPOLATED, nullptr);
+	entity[3] = new Entity(mesh4, M4, eRenderMode::TRIANGLES_INTERPOLATED, T4);
+    
+    
+    
 	current_property = eProperty::FOV;
 	current_scene = eScene::STATIC;
 }
