@@ -31,6 +31,9 @@ public:
 	eProperty current_property;
 	eScene current_scene;
 
+	bool occlusions;
+	bool usemeshtext;
+
 	// Window
 
 	SDL_Window* window = nullptr;
@@ -41,7 +44,9 @@ public:
 
 	// Input
 	bool is_mouse_pressed_left;
-    bool is_mouse_pressed_rigth;
+    bool is_mouse_pressed_right;
+	bool is_mouse_pressed_center;
+
 	const Uint8* keystate;
 	int mouse_state; // Tells which buttons are pressed
 	Vector2 mouse_position; // Last mouse position

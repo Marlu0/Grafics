@@ -17,7 +17,7 @@ Application::Application(const char* caption, int width, int height)
 	this->keystate = SDL_GetKeyboardState(nullptr);
 
 	this->is_mouse_pressed_left = false;
-    this->is_mouse_pressed_rigth = false;
+    this->is_mouse_pressed_right = false;
 	this->framebuffer.Resize(w, h);
 	this->entity = (Entity**)malloc(sizeof(Entity*) * 4);
     this->zbuffer = FloatImage(width, height);
@@ -69,18 +69,27 @@ void Application::Init(void)
 
 	camera = Camera();
 	camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
-	camera.SetPerspective(3.14 / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
+	camera.SetPerspective(PI / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
     
     zbuffer.Fill(1000.0f);
     
+	Image* T1 = new Image();
+	T1->LoadTGA("../res/textures/anna_color_specular.tga", true);
+
+	Image* T2 = new Image();
+	T2->LoadTGA("../res/textures/cleo_color_specular.tga", true);
+
+	Image* T3 = new Image();
+	T3->LoadTGA("../res/textures/lee_color_specular.tga", true);
+
     Image* T4 = new Image();
     T4->LoadTGA("../res/textures/lee_color_specular.tga", true);
     
     
     //camera.SetOrthographic(-1,1,1,-1,-1, 1);
-	entity[0] = new Entity(mesh1, M1, eRenderMode::TRIANGLES, nullptr);
-	entity[1] = new Entity(mesh2, M2, eRenderMode::POINTCLOUD, nullptr);
-	entity[2] = new Entity(mesh3, M3, eRenderMode::TRIANGLES_INTERPOLATED, nullptr);
+	entity[0] = new Entity(mesh1, M1, eRenderMode::TRIANGLES_INTERPOLATED, T1);
+	entity[1] = new Entity(mesh2, M2, eRenderMode::TRIANGLES_INTERPOLATED, T2);
+	entity[2] = new Entity(mesh3, M3, eRenderMode::TRIANGLES_INTERPOLATED, T3);
 	entity[3] = new Entity(mesh4, M4, eRenderMode::TRIANGLES_INTERPOLATED, T4);
     
     
@@ -95,13 +104,13 @@ void Application::Render(void)
 	framebuffer.Fill(Color::BLACK);
 
 	if (current_scene == eScene::ANIMATION) {
-		entity[0]->Render(&framebuffer, &zbuffer, &camera, Color::GREEN);
-		entity[1]->Render(&framebuffer, &zbuffer, &camera, Color::YELLOW);
-		entity[2]->Render(&framebuffer, &zbuffer, &camera, Color::BLUE);
+		entity[0]->Render(&framebuffer, &zbuffer, &camera, Color::GREEN, occlusions);
+		entity[1]->Render(&framebuffer, &zbuffer, &camera, Color::YELLOW, occlusions);
+		entity[2]->Render(&framebuffer, &zbuffer, &camera, Color::BLUE, occlusions);
 	}
 	
 	else if (current_scene == eScene::STATIC) {
-		entity[3]->Render(&framebuffer, &zbuffer, &camera, Color::PURPLE);
+		entity[3]->Render(&framebuffer, &zbuffer, &camera, Color::PURPLE, occlusions);
 	}
 
 	framebuffer.Render();
@@ -141,17 +150,18 @@ void Application::Update(float seconds_elapsed)
 		camera.eye = translate * rotate * first_translate * camera.eye;
 		camera.UpdateViewMatrix();
 
-    } else if (is_mouse_pressed_rigth){
+    } else if (is_mouse_pressed_right){
         
-        
-        
-        
-        
-        
-        
-        
-        
-    }
+		camera.center.x += 0.005 * mouse_delta.x;
+		camera.center.y -= 0.005 * mouse_delta.y;
+		camera.UpdateViewMatrix();
+		
+	} else if (is_mouse_pressed_center) {
+		camera.eye.x += 0.005 * mouse_delta.x;
+		camera.eye.y -= 0.005 * mouse_delta.y;
+		camera.UpdateViewMatrix();
+	}
+
 	if (current_scene == eScene::ANIMATION) {
 		moveHarmonic(entity[0], time, 0.5, Vector3(0, 1, 0));
 		rotateEntity(entity[1], seconds_elapsed, 1, Vector3(0.5, 0, 0));
@@ -164,59 +174,71 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 {
 	// KEY CODES: https://wiki.libsdl.org/SDL2/SDL_Keycode
 	switch (event.keysym.sym) {
-	case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
+		case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
 
-	case SDLK_1:
-		current_scene = eScene::STATIC;
-		break;
+		case SDLK_r:
+			camera = Camera();
+			camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
+			camera.SetPerspective(PI / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
+			camera.UpdateViewMatrix();
 
-	case SDLK_2:
-		current_scene = eScene::ANIMATION;
-		break;
+		case SDLK_1:
+			current_scene = eScene::STATIC;
+			break;
 
-	case SDLK_MINUS:
-	case SDLK_KP_MINUS:
-		if (current_property == eProperty::NEAR_PLANE) {
-			camera.near_plane = std::max(0.1f, static_cast<float>(camera.near_plane - 0.1));
-			camera.UpdateProjectionMatrix();
-		}
-		else if (current_property == eProperty::FAR_PLANE) {
-			camera.far_plane = std::max(static_cast<float>(camera.near_plane), static_cast<float>(camera.far_plane - 0.1));
-			camera.UpdateProjectionMatrix();
-		}
-		else if (current_property == eProperty::FOV) {
-			camera.fov = std::min(PI, camera.fov + (PI / 12));
-			camera.UpdateProjectionMatrix();
-		}
-		break;
+		case SDLK_2:
+			current_scene = eScene::ANIMATION;
+			break;
 
-	case SDLK_PLUS:
-	case SDLK_KP_PLUS:
-		if (current_property == eProperty::NEAR_PLANE) {
-			camera.near_plane = std::min(static_cast<float>(camera.far_plane), static_cast<float>(camera.near_plane + 0.1));
-			camera.UpdateProjectionMatrix();
-		}
-		else if (current_property == eProperty::FAR_PLANE) {
-			camera.far_plane = std::min(200.0f, static_cast<float>(camera.far_plane + 0.1));
-			camera.UpdateProjectionMatrix();
-		}
-		else if (current_property == eProperty::FOV) {
-			camera.fov = std::max(PI / 12, camera.fov - (PI / 12));
-			camera.UpdateProjectionMatrix();
-		}
-		break;
+		case SDLK_MINUS:
+		case SDLK_KP_MINUS:
+			if (current_property == eProperty::NEAR_PLANE) {
+				camera.near_plane = std::max(0.1f, static_cast<float>(camera.near_plane - 0.1));
+				camera.UpdateProjectionMatrix();
+			}
+			else if (current_property == eProperty::FAR_PLANE) {
+				camera.far_plane = std::max(static_cast<float>(camera.near_plane), static_cast<float>(camera.far_plane - 0.1));
+				camera.UpdateProjectionMatrix();
+			}
+			else if (current_property == eProperty::FOV) {
+				camera.fov = std::min(PI, camera.fov + (PI / 12));
+				camera.UpdateProjectionMatrix();
+			}
+			break;
 
-	case SDLK_v:
-		current_property = eProperty::FOV;
-		break;
+		case SDLK_PLUS:
+		case SDLK_KP_PLUS:
+			if (current_property == eProperty::NEAR_PLANE) {
+				camera.near_plane = std::min(static_cast<float>(camera.far_plane), static_cast<float>(camera.near_plane + 0.1));
+				camera.UpdateProjectionMatrix();
+			}
+			else if (current_property == eProperty::FAR_PLANE) {
+				camera.far_plane = std::min(200.0f, static_cast<float>(camera.far_plane + 0.1));
+				camera.UpdateProjectionMatrix();
+			}
+			else if (current_property == eProperty::FOV) {
+				camera.fov = std::max(PI / 12, camera.fov - (PI / 12));
+				camera.UpdateProjectionMatrix();
+			}
+			break;
 
-	case SDLK_n:
-		current_property = eProperty::NEAR_PLANE;
-		break;
+		case SDLK_v:
+			current_property = eProperty::FOV;
+			break;
 
-	case SDLK_f:
-		current_property = eProperty::FAR_PLANE;
-		break;
+		case SDLK_n:
+			current_property = eProperty::NEAR_PLANE;
+			break;
+
+		case SDLK_f:
+			current_property = eProperty::FAR_PLANE;
+			break;
+
+
+		case SDLK_z:
+			if (occlusions) occlusions = false;
+			else occlusions = true;
+
 	}
 }
 
@@ -225,8 +247,11 @@ void Application::OnMouseButtonDown(SDL_MouseButtonEvent event)
 	if (event.button == SDL_BUTTON_LEFT) {
 		is_mouse_pressed_left = true;
 	} else if (event.button == SDL_BUTTON_RIGHT ){
-        is_mouse_pressed_rigth = true;
-    }
+		is_mouse_pressed_right = true;
+	}
+	else if (event.button == SDL_BUTTON_MIDDLE) {
+		is_mouse_pressed_center = true;
+	}
 }
 
 void Application::OnMouseButtonUp( SDL_MouseButtonEvent event )
@@ -234,8 +259,10 @@ void Application::OnMouseButtonUp( SDL_MouseButtonEvent event )
 	if (event.button == SDL_BUTTON_LEFT) {
 		is_mouse_pressed_left = false;
     } else if (event.button == SDL_BUTTON_RIGHT ){
-        is_mouse_pressed_rigth = false;
-    }
+		is_mouse_pressed_right = false;
+    } else if (event.button == SDL_BUTTON_MIDDLE) {
+		is_mouse_pressed_center = false;
+	}
 }
 
 void Application::OnMouseMove(SDL_MouseButtonEvent event)
@@ -250,8 +277,8 @@ void Application::OnWheel(SDL_MouseWheelEvent event)
 
         viewDir.Normalize();
         
-        float zoomAmount = event.preciseY * 0.5f;
-        float minDistance = 1.0f;
+        float zoomAmount = event.preciseY * 0.1f;
+        float minDistance = 0.2f;
                 
         float newDistance = currentDistance - zoomAmount;
 

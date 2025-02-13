@@ -14,7 +14,7 @@ Entity::Entity(Mesh* mesh_ptr, Matrix44 transform, eRenderMode emode, Image* tex
     texture = tex;
 }
 
-void Entity::Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, const Color& c)
+void Entity::Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, const Color& c, bool occlusions)
 {
 	bool negZ = false;
 	std::vector<Vector3> vertices = mesh->GetVertices();
@@ -25,8 +25,8 @@ void Entity::Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, con
 		Vector3 clipPos2 = camera->ProjectVector((modelMatrix * vertices[i + 1]), negZ);
 		Vector3 clipPos3 = camera->ProjectVector((modelMatrix * vertices[i + 2]), negZ);
         Vector2 uv1 = uvs[i];
-        Vector2 uv2 = uvs[i+1];
-        Vector2 uv3 = uvs[i+2];
+        Vector2 uv2 = uvs[i + 1];
+        Vector2 uv3 = uvs[i + 2];
 
 		if (abs(clipPos1.x) <= 1 && abs(clipPos1.y) <= 1 && abs(clipPos1.z) <= 1 &&
 			abs(clipPos2.x) <= 1 && abs(clipPos2.y) <= 1 && abs(clipPos2.z) <= 1 &&
@@ -59,15 +59,15 @@ void Entity::Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, con
 			}
 			else if (mode == eRenderMode::WIREFRAME)
 			{
-				framebuffer->DrawTriangle(triangle, false, c, zbuffer);
+				framebuffer->DrawTriangle(triangle, false, c, zbuffer, occlusions);
 			}
 			else if (mode == eRenderMode::TRIANGLES)
 			{
-				framebuffer->DrawTriangle(triangle, true, c, zbuffer);
+				framebuffer->DrawTriangle(triangle, true, c, zbuffer, occlusions);
 			}
 			else if (mode == eRenderMode::TRIANGLES_INTERPOLATED)
 			{
-				framebuffer->DrawTriangleInterpolated(triangle, zbuffer, texture);
+				framebuffer->DrawTriangleInterpolated(triangle, zbuffer, texture, occlusions);
 			}
 
 		}

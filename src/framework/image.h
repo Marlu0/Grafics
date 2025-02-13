@@ -94,8 +94,8 @@ public:
 		Cell() : minX(INT_MAX), maxX(INT_MIN) {}
 	};
 	void ScanLineDDA(int x0, int y0, int x1, int y1, std::vector<Cell>& table);
-	void DrawTriangle(const sTriangleInfo& triangle, bool isFilled, const Color& c, FloatImage* zbuffer);
-	void DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer, Image* texture);
+	void DrawTriangle(const sTriangleInfo& triangle, bool isFilled, const Color& c, FloatImage* zbuffer, bool occlusions);
+	void DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer, Image* texture, bool occlusions);
 
 	// Used to easy code
 	#ifndef IGNORE_LAMBDAS
