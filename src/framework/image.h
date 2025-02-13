@@ -87,14 +87,14 @@ public:
 	// Shapes
 	void DrawRect(int x, int y, int w, int h, const Color& c);
 	void DrawRect(int x, int y, int w, int h, const Color& borderColor, int borderWidth, bool isFilled, const Color& fillColor);
-	void DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c);
+	void DrawLineDDA(int x0, int y0, float z0, int x1, int y1, float z1, const Color& c, FloatImage* zbuffer);
 	struct Cell {
 		int minX;
 		int maxX;
 		Cell() : minX(INT_MAX), maxX(INT_MIN) {}
 	};
 	void ScanLineDDA(int x0, int y0, int x1, int y1, std::vector<Cell>& table);
-	void DrawTriangle(const sTriangleInfo& triangle, bool isFilled, const Color& c);
+	void DrawTriangle(const sTriangleInfo& triangle, bool isFilled, const Color& c, FloatImage* zbuffer);
 	void DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* zbuffer, Image* texture);
 
 	// Used to easy code

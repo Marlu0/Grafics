@@ -40,7 +40,8 @@ public:
 	float time;
 
 	// Input
-	bool is_mouse_pressed;
+	bool is_mouse_pressed_left;
+    bool is_mouse_pressed_rigth;
 	const Uint8* keystate;
 	int mouse_state; // Tells which buttons are pressed
 	Vector2 mouse_position; // Last mouse position

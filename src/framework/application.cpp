@@ -16,7 +16,8 @@ Application::Application(const char* caption, int width, int height)
 	this->window_height = h;
 	this->keystate = SDL_GetKeyboardState(nullptr);
 
-	this->is_mouse_pressed = false;
+	this->is_mouse_pressed_left = false;
+    this->is_mouse_pressed_rigth = false;
 	this->framebuffer.Resize(w, h);
 	this->entity = (Entity**)malloc(sizeof(Entity*) * 4);
     this->zbuffer = FloatImage(width, height);
@@ -110,9 +111,10 @@ void Application::Render(void)
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-	if (is_mouse_pressed) {
+	if (is_mouse_pressed_left) {
 
 		float angle = PI / 16 * mouse_delta.x;
+        //float angle_x = PI / 16 * mouse_delta.y;
 
 		Matrix44 first_translate;
 		first_translate.Set(1, 0, 0, -camera.center.x,
@@ -126,6 +128,9 @@ void Application::Update(float seconds_elapsed)
 			0, 1, 0, 0,
 			-sin(angle), 0, cos(angle), 0,
 			0, 0, 0, 1);
+        
+        //Matrix44 rotate_x;
+        //rotate_x.Rotate(angle_x, Vector3(1,0,0));
 
 		Matrix44 translate;
 		translate.Set(1, 0, 0, camera.center.x,
@@ -136,7 +141,17 @@ void Application::Update(float seconds_elapsed)
 		camera.eye = translate * rotate * first_translate * camera.eye;
 		camera.UpdateViewMatrix();
 
-	}
+    } else if (is_mouse_pressed_rigth){
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    }
 	if (current_scene == eScene::ANIMATION) {
 		moveHarmonic(entity[0], time, 0.5, Vector3(0, 1, 0));
 		rotateEntity(entity[1], seconds_elapsed, 1, Vector3(0.5, 0, 0));
@@ -208,15 +223,19 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 void Application::OnMouseButtonDown(SDL_MouseButtonEvent event)
 {
 	if (event.button == SDL_BUTTON_LEFT) {
-		is_mouse_pressed = true;
-	}
+		is_mouse_pressed_left = true;
+	} else if (event.button == SDL_BUTTON_RIGHT ){
+        is_mouse_pressed_rigth = true;
+    }
 }
 
 void Application::OnMouseButtonUp( SDL_MouseButtonEvent event )
 {
 	if (event.button == SDL_BUTTON_LEFT) {
-		is_mouse_pressed = false;
-	}
+		is_mouse_pressed_left = false;
+    } else if (event.button == SDL_BUTTON_RIGHT ){
+        is_mouse_pressed_rigth = false;
+    }
 }
 
 void Application::OnMouseMove(SDL_MouseButtonEvent event)
@@ -226,15 +245,24 @@ void Application::OnMouseMove(SDL_MouseButtonEvent event)
 
 void Application::OnWheel(SDL_MouseWheelEvent event)
 {
-	Vector3 viewDir = camera.center - camera.eye;
+        Vector3 viewDir = camera.center - camera.eye;
+        float currentDistance = viewDir.Length(); // Get current distance from eye to center
 
-	viewDir.Normalize();
+        viewDir.Normalize();
+        
+        float zoomAmount = event.preciseY * 0.5f;
+        float minDistance = 1.0f;
+                
+        float newDistance = currentDistance - zoomAmount;
 
-	float zoomAmount = event.preciseY * 0.5f;
+        
+        if (newDistance < minDistance)
+            newDistance = minDistance;
 
-	camera.eye = camera.eye + viewDir * zoomAmount;
-
-	camera.UpdateViewMatrix();
+       
+        camera.eye = camera.center - viewDir * newDistance;
+        
+        camera.UpdateViewMatrix();
 }
 
 void Application::OnFileChanged(const char* filename)

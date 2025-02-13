@@ -40,17 +40,30 @@ void Entity::Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, con
             
 			if (mode == eRenderMode::POINTCLOUD)
 			{
-				framebuffer->SetPixel(screenPos1.x, screenPos1.y, c);
-				framebuffer->SetPixel(screenPos2.x, screenPos2.y, c);
-				framebuffer->SetPixel(screenPos3.x, screenPos3.y, c);
+                if(zbuffer->GetPixel(screenPos1.x, screenPos1.y) > screenPos1.z){
+                    framebuffer->SetPixel(screenPos1.x, screenPos1.y, c);
+                    zbuffer->SetPixel(screenPos1.x, screenPos1.y, screenPos1.z);
+        
+                }
+                if(zbuffer->GetPixel(screenPos2.x, screenPos2.y) > screenPos2.z){
+                    framebuffer->SetPixel(screenPos2.x, screenPos2.y, c);
+                    zbuffer->SetPixel(screenPos2.x, screenPos2.y, screenPos2.z);
+        
+                }
+                if(zbuffer->GetPixel(screenPos3.x, screenPos3.y) > screenPos3.z){
+                    framebuffer->SetPixel(screenPos3.x, screenPos3.y, c);
+                    zbuffer->SetPixel(screenPos3.x, screenPos3.y, screenPos3.z);
+        
+                }
+            
 			}
 			else if (mode == eRenderMode::WIREFRAME)
 			{
-				framebuffer->DrawTriangle(triangle, false, c);
+				framebuffer->DrawTriangle(triangle, false, c, zbuffer);
 			}
 			else if (mode == eRenderMode::TRIANGLES)
 			{
-				framebuffer->DrawTriangle(triangle, true, c);
+				framebuffer->DrawTriangle(triangle, true, c, zbuffer);
 			}
 			else if (mode == eRenderMode::TRIANGLES_INTERPOLATED)
 			{
