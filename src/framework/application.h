@@ -9,6 +9,8 @@
 #include "image.h"
 #include "entity.h"
 
+#define NUMENTITIES 4
+
 enum class eProperty {
 	FOV,
 	NEAR_PLANE,
@@ -34,6 +36,7 @@ public:
 	bool occlusions;
 	bool usemeshtext;
 	bool interpolated;
+	bool wireframe;
 
 	// Window
 

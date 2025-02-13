@@ -19,7 +19,7 @@ Application::Application(const char* caption, int width, int height)
 	this->is_mouse_pressed_left = false;
     this->is_mouse_pressed_right = false;
 	this->framebuffer.Resize(w, h);
-	this->entity = (Entity**)malloc(sizeof(Entity*) * 4);
+	this->entity = (Entity**)malloc(sizeof(Entity*) * NUMENTITIES);
     this->zbuffer = FloatImage(width, height);
 }
 
@@ -87,8 +87,8 @@ void Application::Init(void)
     
     
     //camera.SetOrthographic(-1,1,1,-1,-1, 1);
-	entity[0] = new Entity(mesh1, M1, eRenderMode::TRIANGLES_INTERPOLATED, T1);
-	entity[1] = new Entity(mesh2, M2, eRenderMode::TRIANGLES_INTERPOLATED, T2);
+	entity[0] = new Entity(mesh1, M1, eRenderMode::TRIANGLES, T1);
+	entity[1] = new Entity(mesh2, M2, eRenderMode::TRIANGLES, T2);
 	entity[2] = new Entity(mesh3, M3, eRenderMode::TRIANGLES_INTERPOLATED, T3);
 	entity[3] = new Entity(mesh4, M4, eRenderMode::TRIANGLES_INTERPOLATED, T4);
     
@@ -249,20 +249,18 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 			break;
 
 		case SDLK_c:
-			if (interpolated) {
-				
-				for (int i = 0; i < 4; i++) {
-					if (entity[i]->mode == eRenderMode::TRIANGLES_INTERPOLATED) entity[i]->mode = eRenderMode::TRIANGLES;
+			for (int i = 0; i < NUMENTITIES; i++) {
+				if (entity[i]->mode == eRenderMode::TRIANGLES_INTERPOLATED) {
+					entity[i]->mode = eRenderMode::TRIANGLES;
+					interpolated = false;
 				}
-				interpolated = false;
-			}
-			else {
-				for (int i = 0; i < 4; i++) {
-					if (entity[i]->mode == eRenderMode::TRIANGLES) entity[i]->mode = eRenderMode::TRIANGLES_INTERPOLATED;
+				else if (entity[i]->mode == eRenderMode::TRIANGLES) {
+					entity[i]->mode = eRenderMode::TRIANGLES_INTERPOLATED;
+					interpolated = true;
 				}
-				interpolated = true;
 			}
 			break;
+
 	}
 }
 
