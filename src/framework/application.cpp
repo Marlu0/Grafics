@@ -21,6 +21,10 @@ Application::Application(const char* caption, int width, int height)
 	this->framebuffer.Resize(w, h);
 	this->entity = (Entity**)malloc(sizeof(Entity*) * NUMENTITIES);
     this->zbuffer = FloatImage(width, height);
+	this->current_property = eProperty::FOV;
+	this->current_scene = eScene::STATIC;
+	this->occlusions = true;
+	this->usemeshtext = true;
 }
 
 Application::~Application()
@@ -31,29 +35,11 @@ void Application::Init(void)
 {
 	std::cout << "Initiating app..." << std::endl;
 
-	Matrix44 M1;
-	M1.Set(	2, 0, 1, 1,
-			0, 2, 0, -0.5,
-			0, 0, 2, 0,
-			0, 0, 0, 1);
+	camera = Camera();
+	camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
+	camera.SetPerspective(PI / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
 
-	Matrix44 M2;
-	M2.Set(	2, 0, 0, 0,
-			0, 2, 0, 0,
-			0, 0, 2, 0,
-			0, 0, 0, 1);
-
-	Matrix44 M3;
-	M3.Set( 2, 0, 0, -1,
-			0, 2, 0, 0,
-			0, 0, 2, 0,
-			0, 0, 0, 1);
-
-	Matrix44 M4;
-	M4.Set( 4, 0, 0, 0.5,
-			0, 4, 0, -0.5,
-			0, 0, 4, 0,
-			0, 0, 0, 1);
+	zbuffer.Fill(1000.0f);
 
 	Mesh* mesh1 = new Mesh();
 	mesh1->LoadOBJ("../res/meshes/anna.obj");
@@ -67,12 +53,30 @@ void Application::Init(void)
 	Mesh* mesh4 = new Mesh();
 	mesh4->LoadOBJ("../res/meshes/lee.obj");
 
-	camera = Camera();
-	camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
-	camera.SetPerspective(PI / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
-    
-    zbuffer.Fill(1000.0f);
-    
+	Matrix44 M1;
+	M1.Set(2, 0, 1, 1,
+		0, 2, 0, -0.5,
+		0, 0, 2, 0,
+		0, 0, 0, 1);
+
+	Matrix44 M2;
+	M2.Set(2, 0, 0, 0,
+		0, 2, 0, 0,
+		0, 0, 2, 0,
+		0, 0, 0, 1);
+
+	Matrix44 M3;
+	M3.Set(2, 0, 0, -1,
+		0, 2, 0, 0,
+		0, 0, 2, 0,
+		0, 0, 0, 1);
+
+	Matrix44 M4;
+	M4.Set(4, 0, 0, 0.5,
+		0, 4, 0, -0.5,
+		0, 0, 4, 0,
+		0, 0, 0, 1);
+
 	Image* T1 = new Image();
 	T1->LoadTGA("../res/textures/anna_color_specular.tga", true);
 
@@ -85,20 +89,12 @@ void Application::Init(void)
     Image* T4 = new Image();
     T4->LoadTGA("../res/textures/lee_color_specular.tga", true);
     
-    
     //camera.SetOrthographic(-1,1,1,-1,-1, 1);
-	entity[0] = new Entity(mesh1, M1, eRenderMode::TRIANGLES, T1);
-	entity[1] = new Entity(mesh2, M2, eRenderMode::TRIANGLES, T2);
+	entity[0] = new Entity(mesh1, M1, eRenderMode::TRIANGLES_INTERPOLATED, T1);
+	entity[1] = new Entity(mesh2, M2, eRenderMode::TRIANGLES_INTERPOLATED, T2);
 	entity[2] = new Entity(mesh3, M3, eRenderMode::TRIANGLES_INTERPOLATED, T3);
 	entity[3] = new Entity(mesh4, M4, eRenderMode::TRIANGLES_INTERPOLATED, T4);
-    
-    
-    
-	current_property = eProperty::FOV;
-	current_scene = eScene::STATIC;
 
-	occlusions = true;
-	usemeshtext = true;
 }
 
 // Render one frame
@@ -155,7 +151,7 @@ void Application::Update(float seconds_elapsed)
 
     } else if (is_mouse_pressed_right){
         
-		camera.center.x += 0.005 * mouse_delta.x;
+		camera.center.x -= 0.005 * mouse_delta.x;
 		camera.center.y -= 0.005 * mouse_delta.y;
 		camera.UpdateViewMatrix();
 		
@@ -260,7 +256,6 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 				}
 			}
 			break;
-
 	}
 }
 
