@@ -14,7 +14,7 @@ Entity::Entity(Mesh* mesh_ptr, Matrix44 transform, eRenderMode emode, Image* tex
     texture = tex;
 }
 
-void Entity::Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, const Color& c, bool occlusions)
+void Entity::Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, const Color& c, bool occlusions, bool usemeshtext, bool interpolated)
 {
 	bool negZ = false;
 	std::vector<Vector3> vertices = mesh->GetVertices();
@@ -67,7 +67,9 @@ void Entity::Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, con
 			}
 			else if (mode == eRenderMode::TRIANGLES_INTERPOLATED)
 			{
-				framebuffer->DrawTriangleInterpolated(triangle, zbuffer, texture, occlusions);
+				if (!usemeshtext) framebuffer->DrawTriangleInterpolated(triangle, zbuffer, nullptr, occlusions);
+				else if (usemeshtext) framebuffer->DrawTriangleInterpolated(triangle, zbuffer, texture, occlusions);
+				
 			}
 
 		}

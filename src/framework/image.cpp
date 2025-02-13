@@ -395,11 +395,11 @@ void Image::DrawTriangle(const sTriangleInfo& triangle, bool isFilled, const Col
 			if (aet[y].minX <= aet[y].maxX) {
                 for (int x = aet[y].minX; x <= aet[y].maxX; ++x) {
                     
-                    float Aa = abs(((triangle.p1.x - x) * (triangle.p2.y - y)) - ((triangle.p1.y - y) * (triangle.p2.x - x))) / 2.0f;
-                    float Ab = abs(((triangle.p2.x - x) * (triangle.p3.y - y)) - ((triangle.p2.y - y) * (triangle.p3.x - x))) / 2.0f;
-                    float Ac = abs(((triangle.p3.x - x) * (triangle.p1.y - y)) - ((triangle.p3.y - y) * (triangle.p1.x - x))) / 2.0f;
-                    float Aabc = abs((triangle.p2.x - triangle.p1.x) * (triangle.p3.y - triangle.p1.y) - (triangle.p2.y - triangle.p1.y) * (triangle.p3.x - triangle.p1.x)) * 0.5f;
-                    
+					float Aa = abs(((triangle.p2.x - x) * (triangle.p3.y - y)) - ((triangle.p2.y - y) * (triangle.p3.x - x))) / 2.0f;
+					float Ab = abs(((triangle.p1.x - x) * (triangle.p3.y - y)) - ((triangle.p1.y - y) * (triangle.p3.x - x))) / 2.0f;
+					float Ac = abs(((triangle.p1.x - x) * (triangle.p2.y - y)) - ((triangle.p1.y - y) * (triangle.p2.x - x))) / 2.0f;
+					float Aabc = abs((triangle.p2.x - triangle.p1.x) * (triangle.p3.y - triangle.p1.y) - (triangle.p2.y - triangle.p1.y) * (triangle.p3.x - triangle.p1.x)) * 0.5f;
+
                     float alpha = Aa / Aabc;
                     float beta = Ab / Aabc;
                     float gamma = Ac / Aabc;
@@ -449,11 +449,11 @@ void Image::DrawTriangleInterpolated(const sTriangleInfo& triangle, FloatImage* 
 			for (int x = aet[y].minX; x <= aet[y].maxX; ++x)
 			{
                 
-                float Aa = abs(((triangle.p1.x - x) * (triangle.p2.y - y)) - ((triangle.p1.y - y) * (triangle.p2.x - x))) / 2.0f;
-				float Ab = abs(((triangle.p2.x - x) * (triangle.p3.y - y)) - ((triangle.p2.y - y) * (triangle.p3.x - x))) / 2.0f;
-				float Ac = abs(((triangle.p3.x - x) * (triangle.p1.y - y)) - ((triangle.p3.y - y) * (triangle.p1.x - x))) / 2.0f;
+				float Aa = abs(((triangle.p2.x - x) * (triangle.p3.y - y)) - ((triangle.p2.y - y) * (triangle.p3.x - x))) / 2.0f;
+				float Ab = abs(((triangle.p1.x - x) * (triangle.p3.y - y)) - ((triangle.p1.y - y) * (triangle.p3.x - x))) / 2.0f;
+				float Ac = abs(((triangle.p1.x - x) * (triangle.p2.y - y)) - ((triangle.p1.y - y) * (triangle.p2.x - x))) / 2.0f;
 				float Aabc = abs((triangle.p2.x - triangle.p1.x) * (triangle.p3.y - triangle.p1.y) - (triangle.p2.y - triangle.p1.y) * (triangle.p3.x - triangle.p1.x)) * 0.5f;
-                
+				
 				float alpha = abs(Aa / Aabc);
 				float beta = abs(Ab / Aabc);
 				float gamma = abs(Ac / Aabc);

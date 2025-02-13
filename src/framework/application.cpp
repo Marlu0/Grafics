@@ -96,6 +96,9 @@ void Application::Init(void)
     
 	current_property = eProperty::FOV;
 	current_scene = eScene::STATIC;
+
+	occlusions = true;
+	usemeshtext = true;
 }
 
 // Render one frame
@@ -104,13 +107,13 @@ void Application::Render(void)
 	framebuffer.Fill(Color::BLACK);
 
 	if (current_scene == eScene::ANIMATION) {
-		entity[0]->Render(&framebuffer, &zbuffer, &camera, Color::GREEN, occlusions);
-		entity[1]->Render(&framebuffer, &zbuffer, &camera, Color::YELLOW, occlusions);
-		entity[2]->Render(&framebuffer, &zbuffer, &camera, Color::BLUE, occlusions);
+		entity[0]->Render(&framebuffer, &zbuffer, &camera, Color::GREEN, occlusions, usemeshtext, interpolated);
+		entity[1]->Render(&framebuffer, &zbuffer, &camera, Color::YELLOW, occlusions, usemeshtext, interpolated);
+		entity[2]->Render(&framebuffer, &zbuffer, &camera, Color::BLUE, occlusions, usemeshtext, interpolated);
 	}
 	
 	else if (current_scene == eScene::STATIC) {
-		entity[3]->Render(&framebuffer, &zbuffer, &camera, Color::PURPLE, occlusions);
+		entity[3]->Render(&framebuffer, &zbuffer, &camera, Color::PURPLE, occlusions, usemeshtext, interpolated);
 	}
 
 	framebuffer.Render();
@@ -181,6 +184,7 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 			camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
 			camera.SetPerspective(PI / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
 			camera.UpdateViewMatrix();
+			break;
 
 		case SDLK_1:
 			current_scene = eScene::STATIC;
@@ -234,11 +238,31 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 			current_property = eProperty::FAR_PLANE;
 			break;
 
+		case SDLK_t:
+			if (usemeshtext) usemeshtext = false;
+			else usemeshtext = true;
+			break;
 
 		case SDLK_z:
 			if (occlusions) occlusions = false;
 			else occlusions = true;
+			break;
 
+		case SDLK_c:
+			if (interpolated) {
+				
+				for (int i = 0; i < 4; i++) {
+					if (entity[i]->mode == eRenderMode::TRIANGLES_INTERPOLATED) entity[i]->mode = eRenderMode::TRIANGLES;
+				}
+				interpolated = false;
+			}
+			else {
+				for (int i = 0; i < 4; i++) {
+					if (entity[i]->mode == eRenderMode::TRIANGLES) entity[i]->mode = eRenderMode::TRIANGLES_INTERPOLATED;
+				}
+				interpolated = true;
+			}
+			break;
 	}
 }
 

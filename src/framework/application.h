@@ -33,6 +33,7 @@ public:
 
 	bool occlusions;
 	bool usemeshtext;
+	bool interpolated;
 
 	// Window
 

@@ -21,5 +21,5 @@ public:
 
 	Entity(void);
 	Entity(Mesh* mesh_ptr, Matrix44 transform, eRenderMode emode, Image* tex);
-	void Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, const Color& c, bool occlusion);
+	void Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, const Color& c, bool occlusion, bool usemeshtext, bool interpolated);
 };
