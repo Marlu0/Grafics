@@ -340,6 +340,7 @@ void Image::DrawLineDDA(int x0, int y0, float z0, int x1, int y1, float z1, cons
 		y += vy;
         z += vz;
 	}
+	
 }
 
 // Draw Triangle

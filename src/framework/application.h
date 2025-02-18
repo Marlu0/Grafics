@@ -8,6 +8,8 @@
 #include "framework.h"
 #include "image.h"
 #include "entity.h"
+#include "shader.h"
+
 
 #define NUMENTITIES 4
 
@@ -25,6 +27,9 @@ enum class eScene {
 class Application
 {
 public:
+	
+	Mesh* mesh;
+	Shader* shader;
 
 	// Entity and camera
 	Camera camera;
@@ -64,7 +69,7 @@ public:
 	void OnFileChanged(const char* filename);
 
 	// CPU Global framebuffer
-	Image framebuffer;
+
 	FloatImage zbuffer;
 
 	// Constructor and main methods
@@ -80,7 +85,7 @@ public:
 		glViewport( 0,0, width, height );
 		this->window_width = width;
 		this->window_height = height;
-		this->framebuffer.Resize(width, height);
+	
 	}
 
 	Vector2 GetWindowSize()

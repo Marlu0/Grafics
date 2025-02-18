@@ -5,6 +5,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <cstring>
+#include <GL\GL.h>
 
 Mesh::Mesh()
 {
@@ -44,6 +45,7 @@ void Mesh::Render(int primitive)
 		glDisableClientState(GL_NORMAL_ARRAY);
 	if (uvs.size())
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
 }
 
 void Mesh::CreateQuad()
@@ -67,6 +69,7 @@ void Mesh::CreateQuad()
 	uvs.push_back(Vector2(0, 1));
 	uvs.push_back(Vector2(1, 1));
 	uvs.push_back(Vector2(0, 0));
+	
 }
 
 void Mesh::CreatePlane(float size)

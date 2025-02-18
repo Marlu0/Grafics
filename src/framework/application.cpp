@@ -2,6 +2,8 @@
 #include "mesh.h"
 #include "shader.h"
 #include "utils.h" 
+#include "GL/glew.h"
+#include <fstream>
 
 Application::Application(const char* caption, int width, int height)
 {
@@ -18,13 +20,14 @@ Application::Application(const char* caption, int width, int height)
 
 	this->is_mouse_pressed_left = false;
     this->is_mouse_pressed_right = false;
-	this->framebuffer.Resize(w, h);
 	this->entity = (Entity**)malloc(sizeof(Entity*) * NUMENTITIES);
     this->zbuffer = FloatImage(width, height);
 	this->current_property = eProperty::FOV;
 	this->current_scene = eScene::STATIC;
 	this->occlusions = true;
 	this->usemeshtext = true;
+
+	
 }
 
 Application::~Application()
@@ -33,139 +36,29 @@ Application::~Application()
 
 void Application::Init(void)
 {
-	std::cout << "Initiating app..." << std::endl;
+	shader = new Shader();
 
-	camera = Camera();
-	camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
-	camera.SetPerspective(PI / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
+	mesh = new Mesh();
 
-	zbuffer.Fill(1000.0f);
+	shader = Shader::Get("../res/shaders/quad.vs", "../res/shaders/quad.fs");
 
-	Mesh* mesh1 = new Mesh();
-	mesh1->LoadOBJ("../res/meshes/anna.obj");
-
-	Mesh* mesh2 = new Mesh();
-	mesh2->LoadOBJ("../res/meshes/cleo.obj");
-
-	Mesh* mesh3 = new Mesh();
-	mesh3->LoadOBJ("../res/meshes/lee.obj");
-
-	Mesh* mesh4 = new Mesh();
-	mesh4->LoadOBJ("../res/meshes/lee.obj");
-
-	Matrix44 M1;
-	M1.Set(2, 0, 1, 1,
-		0, 2, 0, -0.5,
-		0, 0, 2, 0,
-		0, 0, 0, 1);
-
-	Matrix44 M2;
-	M2.Set(2, 0, 0, 0,
-		0, 2, 0, 0,
-		0, 0, 2, 0,
-		0, 0, 0, 1);
-
-	Matrix44 M3;
-	M3.Set(2, 0, 0, -1,
-		0, 2, 0, 0,
-		0, 0, 2, 0,
-		0, 0, 0, 1);
-
-	Matrix44 M4;
-	M4.Set(4, 0, 0, 0.5,
-		0, 4, 0, -0.5,
-		0, 0, 4, 0,
-		0, 0, 0, 1);
-
-	Image* T1 = new Image();
-	T1->LoadTGA("../res/textures/anna_color_specular.tga", true);
-
-	Image* T2 = new Image();
-	T2->LoadTGA("../res/textures/cleo_color_specular.tga", true);
-
-	Image* T3 = new Image();
-	T3->LoadTGA("../res/textures/lee_color_specular.tga", true);
-
-    Image* T4 = new Image();
-    T4->LoadTGA("../res/textures/lee_color_specular.tga", true);
-    
-    //camera.SetOrthographic(-1,1,1,-1,-1, 1);
-	entity[0] = new Entity(mesh1, M1, eRenderMode::TRIANGLES_INTERPOLATED, T1);
-	entity[1] = new Entity(mesh2, M2, eRenderMode::TRIANGLES_INTERPOLATED, T2);
-	entity[2] = new Entity(mesh3, M3, eRenderMode::TRIANGLES_INTERPOLATED, T3);
-	entity[3] = new Entity(mesh4, M4, eRenderMode::TRIANGLES_INTERPOLATED, T4);
+	mesh->CreateQuad();
 
 }
 
 // Render one frame
 void Application::Render(void)
 {
-	framebuffer.Fill(Color::BLACK);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// Clear the screen
 
-	if (current_scene == eScene::ANIMATION) {
-		entity[0]->Render(&framebuffer, &zbuffer, &camera, Color::GREEN, occlusions, usemeshtext, interpolated);
-		entity[1]->Render(&framebuffer, &zbuffer, &camera, Color::YELLOW, occlusions, usemeshtext, interpolated);
-		entity[2]->Render(&framebuffer, &zbuffer, &camera, Color::BLUE, occlusions, usemeshtext, interpolated);
-	}
-	
-	else if (current_scene == eScene::STATIC) {
-		entity[3]->Render(&framebuffer, &zbuffer, &camera, Color::PURPLE, occlusions, usemeshtext, interpolated);
-	}
-
-	framebuffer.Render();
-    zbuffer.Fill(1000.0f);
+	shader->Enable();
+	mesh->Render();
+	shader->Disable();
 }
-
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-	if (is_mouse_pressed_left) {
-
-		float angle = PI / 16 * mouse_delta.x;
-        //float angle_x = PI / 16 * mouse_delta.y;
-
-		Matrix44 first_translate;
-		first_translate.Set(1, 0, 0, -camera.center.x,
-			0, 1, 0, -camera.center.y,
-			0, 0, 1, -camera.center.z,
-			0, 0, 0, 1);
-
-
-		Matrix44 rotate;
-		rotate.Set(cos(angle), 0, sin(angle), 0,
-			0, 1, 0, 0,
-			-sin(angle), 0, cos(angle), 0,
-			0, 0, 0, 1);
-        
-        //Matrix44 rotate_x;
-        //rotate_x.Rotate(angle_x, Vector3(1,0,0));
-
-		Matrix44 translate;
-		translate.Set(1, 0, 0, camera.center.x,
-			0, 1, 0, camera.center.y,
-			0, 0, 1, camera.center.z,
-			0, 0, 0, 1);
-
-		camera.eye = translate * rotate * first_translate * camera.eye;
-		camera.UpdateViewMatrix();
-
-    } else if (is_mouse_pressed_right){
-        
-		camera.center.x -= 0.005 * mouse_delta.x;
-		camera.center.y -= 0.005 * mouse_delta.y;
-		camera.UpdateViewMatrix();
-		
-	} else if (is_mouse_pressed_center) {
-		camera.eye.x += 0.005 * mouse_delta.x;
-		camera.eye.y -= 0.005 * mouse_delta.y;
-		camera.UpdateViewMatrix();
-	}
-
-	if (current_scene == eScene::ANIMATION) {
-		moveHarmonic(entity[0], time, 0.5, Vector3(0, 1, 0));
-		rotateEntity(entity[1], seconds_elapsed, 1, Vector3(0.5, 0, 0));
-		scaleEntity(entity[2], time, 0.5, Vector3(2, 2, 2));
-	}
+	
 }
 
 //keyboard press event 
