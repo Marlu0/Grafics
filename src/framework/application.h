@@ -13,15 +13,11 @@
 
 #define NUMENTITIES 4
 
-enum class eProperty {
-	FOV,
-	NEAR_PLANE,
-	FAR_PLANE
-};
-
-enum class eScene {
-	STATIC,
-	ANIMATION,
+enum class eTask {
+	FORMULAS,
+	FILTERS,
+	TRANSFORMATIONS,
+	RENDERMESH
 };
 
 class Application
@@ -33,10 +29,9 @@ public:
 
 	// Entity and camera
 	Camera camera;
-	Entity** entity;
 
-	eProperty current_property;
-	eScene current_scene;
+	eTask current_task;
+	int current_subtask;
 
 	bool occlusions;
 	bool usemeshtext;
@@ -67,10 +62,6 @@ public:
 	void OnMouseMove(SDL_MouseButtonEvent event);
 	void OnWheel(SDL_MouseWheelEvent event);
 	void OnFileChanged(const char* filename);
-
-	// CPU Global framebuffer
-
-	FloatImage zbuffer;
 
 	// Constructor and main methods
 	Application(const char* caption, int width, int height);

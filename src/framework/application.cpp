@@ -20,10 +20,6 @@ Application::Application(const char* caption, int width, int height)
 
 	this->is_mouse_pressed_left = false;
     this->is_mouse_pressed_right = false;
-	this->entity = (Entity**)malloc(sizeof(Entity*) * NUMENTITIES);
-    this->zbuffer = FloatImage(width, height);
-	this->current_property = eProperty::FOV;
-	this->current_scene = eScene::STATIC;
 	this->occlusions = true;
 	this->usemeshtext = true;
 
@@ -40,7 +36,9 @@ void Application::Init(void)
 
 	mesh = new Mesh();
 
-	shader = Shader::Get("../res/shaders/quad.vs", "../res/shaders/quad.fs");
+	current_task = eTask::FORMULAS;
+	current_subtask = 1;
+	shader = Shader::Get("../res/shaders/redtoblue.vs", "../res/shaders/redtoblue.fs");
 
 	mesh->CreateQuad();
 
@@ -58,7 +56,29 @@ void Application::Render(void)
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-	
+	switch (current_task) {
+		case eTask::FORMULAS:
+			
+			break;
+		case eTask::FILTERS:
+			switch (current_subtask) {
+				
+			}
+			break;
+
+		case eTask::TRANSFORMATIONS:
+			switch (current_subtask) {
+
+			}
+			break;
+
+		case eTask::RENDERMESH:
+			switch (current_subtask) {
+
+			}
+			break;
+
+	}
 }
 
 //keyboard press event 
@@ -76,78 +96,56 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 			break;
 
 		case SDLK_1:
-			current_scene = eScene::STATIC;
+			current_task = eTask::FORMULAS;
 			break;
 
 		case SDLK_2:
-			current_scene = eScene::ANIMATION;
+			current_task = eTask::FILTERS;
 			break;
 
-		case SDLK_MINUS:
-		case SDLK_KP_MINUS:
-			if (current_property == eProperty::NEAR_PLANE) {
-				camera.near_plane = std::max(0.1f, static_cast<float>(camera.near_plane - 0.1));
-				camera.UpdateProjectionMatrix();
-			}
-			else if (current_property == eProperty::FAR_PLANE) {
-				camera.far_plane = std::max(static_cast<float>(camera.near_plane), static_cast<float>(camera.far_plane - 0.1));
-				camera.UpdateProjectionMatrix();
-			}
-			else if (current_property == eProperty::FOV) {
-				camera.fov = std::min(PI, camera.fov + (PI / 12));
-				camera.UpdateProjectionMatrix();
-			}
+		case SDLK_3:
+			current_task = eTask::TRANSFORMATIONS;
 			break;
 
-		case SDLK_PLUS:
-		case SDLK_KP_PLUS:
-			if (current_property == eProperty::NEAR_PLANE) {
-				camera.near_plane = std::min(static_cast<float>(camera.far_plane), static_cast<float>(camera.near_plane + 0.1));
-				camera.UpdateProjectionMatrix();
-			}
-			else if (current_property == eProperty::FAR_PLANE) {
-				camera.far_plane = std::min(200.0f, static_cast<float>(camera.far_plane + 0.1));
-				camera.UpdateProjectionMatrix();
-			}
-			else if (current_property == eProperty::FOV) {
-				camera.fov = std::max(PI / 12, camera.fov - (PI / 12));
-				camera.UpdateProjectionMatrix();
+		case SDLK_4:
+			current_task = eTask::RENDERMESH;
+			break;	
+
+		case SDLK_a:
+			if (current_task == eTask::FORMULAS) {
+				shader = Shader::Get("../res/shaders/redtoblue.vs", "../res/shaders/redtoblue.fs");
 			}
 			break;
 
-		case SDLK_v:
-			current_property = eProperty::FOV;
+		case SDLK_s:
+			if (current_task == eTask::FORMULAS) {
+				shader = Shader::Get("../res/shaders/pointfade.vs", "../res/shaders/pointfade.fs");
+			}
 			break;
 
-		case SDLK_n:
-			current_property = eProperty::NEAR_PLANE;
+		case SDLK_d:
+			if (current_task == eTask::FORMULAS) {
+				shader = Shader::Get("../res/shaders/newyork.vs", "../res/shaders/newyork.fs");
+			}
 			break;
 
 		case SDLK_f:
-			current_property = eProperty::FAR_PLANE;
-			break;
-
-		case SDLK_t:
-			if (usemeshtext) usemeshtext = false;
-			else usemeshtext = true;
-			break;
-
-		case SDLK_z:
-			if (occlusions) occlusions = false;
-			else occlusions = true;
-			break;
-
-		case SDLK_c:
-			for (int i = 0; i < NUMENTITIES; i++) {
-				if (entity[i]->mode == eRenderMode::TRIANGLES_INTERPOLATED) {
-					entity[i]->mode = eRenderMode::TRIANGLES;
-					interpolated = false;
-				}
-				else if (entity[i]->mode == eRenderMode::TRIANGLES) {
-					entity[i]->mode = eRenderMode::TRIANGLES_INTERPOLATED;
-					interpolated = true;
-				}
+			if (current_task == eTask::FORMULAS) {
+				shader = Shader::Get("../res/shaders/redgreengrad.vs", "../res/shaders/redgreengrad.fs");
 			}
+			break;
+
+		case SDLK_g:
+			if (current_task == eTask::FORMULAS) {
+				shader = Shader::Get("../res/shaders/chess.vs", "../res/shaders/chess.fs");
+			}
+			break;
+
+		case SDLK_h:
+			if (current_task == eTask::FORMULAS) {
+				shader = Shader::Get("../res/shaders/sinus.vs", "../res/shaders/sinus.fs");
+			}
+			break;
 			break;
 	}
 }
