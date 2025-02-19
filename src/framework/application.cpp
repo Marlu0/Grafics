@@ -32,13 +32,15 @@ Application::~Application()
 
 void Application::Init(void)
 {
-	shader = new Shader();
 
 	mesh = new Mesh();
 
 	current_task = eTask::FORMULAS;
 	current_subtask = 1;
-	shader = Shader::Get("../res/shaders/redtoblue.vs", "../res/shaders/redtoblue.fs");
+
+	shader = Shader::Get("shaders/redtoblue.vs", "shaders/redtoblue.fs");
+	texture = Texture::Get("images/fruits.png");
+	
 
 	mesh->CreateQuad();
 
@@ -50,6 +52,8 @@ void Application::Render(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// Clear the screen
 
 	shader->Enable();
+	shader->SetUniform1("u_aspect_ratio", (float)window_width / (float)window_height);
+	shader->SetTexture("u_texture", texture);
 	mesh->Render();
 	shader->Disable();
 }
@@ -97,10 +101,14 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 
 		case SDLK_1:
 			current_task = eTask::FORMULAS;
+			current_subtask = 1;
+			shader = Shader::Get("shaders/redtoblue.vs", "shaders/redtoblue.fs");
 			break;
 
 		case SDLK_2:
 			current_task = eTask::FILTERS;
+			current_subtask = 1;
+			shader = Shader::Get("shaders/bnw.vs", "shaders/bnw.fs");
 			break;
 
 		case SDLK_3:
@@ -113,37 +121,55 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 
 		case SDLK_a:
 			if (current_task == eTask::FORMULAS) {
-				shader = Shader::Get("../res/shaders/redtoblue.vs", "../res/shaders/redtoblue.fs");
+				shader = Shader::Get("shaders/redtoblue.vs", "shaders/redtoblue.fs");
+			}
+			else if (current_task == eTask::FILTERS) {
+				shader = Shader::Get("shaders/bnw.vs", "shaders/bnw.fs");
 			}
 			break;
 
 		case SDLK_s:
 			if (current_task == eTask::FORMULAS) {
-				shader = Shader::Get("../res/shaders/pointfade.vs", "../res/shaders/pointfade.fs");
+				shader = Shader::Get("shaders/pointfade.vs", "shaders/pointfade.fs");
+			}
+			else if (current_task == eTask::FILTERS) {
+				shader = Shader::Get("shaders/inverse.vs", "shaders/inverse.fs");
 			}
 			break;
 
 		case SDLK_d:
 			if (current_task == eTask::FORMULAS) {
-				shader = Shader::Get("../res/shaders/newyork.vs", "../res/shaders/newyork.fs");
+				shader = Shader::Get("shaders/newyork.vs", "shaders/newyork.fs");
+			}
+			else if (current_task == eTask::FILTERS) {
+				shader = Shader::Get("shaders/breakingbad.vs", "shaders/breakingbad.fs");
 			}
 			break;
 
 		case SDLK_f:
 			if (current_task == eTask::FORMULAS) {
-				shader = Shader::Get("../res/shaders/redgreengrad.vs", "../res/shaders/redgreengrad.fs");
+				shader = Shader::Get("shaders/redgreengrad.vs", "shaders/redgreengrad.fs");
+			}
+			else if (current_task == eTask::FILTERS) {
+				shader = Shader::Get("shaders/contrast.vs", "shaders/contrast.fs");
 			}
 			break;
 
 		case SDLK_g:
 			if (current_task == eTask::FORMULAS) {
-				shader = Shader::Get("../res/shaders/chess.vs", "../res/shaders/chess.fs");
+				shader = Shader::Get("shaders/chess.vs", "shaders/chess.fs");
+			}
+			else if (current_task == eTask::FILTERS) {
+				shader = Shader::Get("shaders/vignette.vs", "shaders/vignette.fs");
 			}
 			break;
 
 		case SDLK_h:
 			if (current_task == eTask::FORMULAS) {
-				shader = Shader::Get("../res/shaders/sinus.vs", "../res/shaders/sinus.fs");
+				shader = Shader::Get("shaders/sinus.vs", "shaders/sinus.fs");
+			}
+			else if (current_task == eTask::FILTERS) {
+				shader = Shader::Get("", "");
 			}
 			break;
 			break;

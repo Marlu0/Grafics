@@ -26,6 +26,7 @@ public:
 	
 	Mesh* mesh;
 	Shader* shader;
+	Texture* texture;
 
 	// Entity and camera
 	Camera camera;

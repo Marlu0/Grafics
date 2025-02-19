@@ -1,24 +1,31 @@
 varying vec2 v_uv;
 
+uniform float u_aspect_ratio;
+
 void main()
 {
-    // Number of stripes (adjust for spacing)
     float N = 10.0; 
-
-    // Compute full cycle size (stripe + gap)
     float cycleSize = 1.0 / N;
+    float stripeWidth = cycleSize / 5.0;
 
-    // Stripe width is 1/3 of the full cycle (1 part stripe, 2 parts black space)
-    float stripeWidth = cycleSize / 3.0;
+    vec2 scaled_uv = v_uv * vec2(u_aspect_ratio, 1.0); // Scale the x-coordinate by the aspect ratio
 
-    // Compute vertical red stripes (1 if inside stripe region, 0 otherwise)
-    float red = step(mod(v_uv.x, cycleSize), stripeWidth);
+    float diffusionStrength = 0.1;
+    float edgeSoftness = diffusionStrength * cycleSize; // Keeps blur proportional
 
-    // Compute horizontal blue stripes (1 if inside stripe region, 0 otherwise)
-    float blue = step(mod(v_uv.y, cycleSize), stripeWidth);
+    // Compute vertical red stripes (centered blend)
+    float xEdge = mod(scaled_uv.x, cycleSize);
+    float red = clamp((stripeWidth - min(xEdge, cycleSize - xEdge)) / edgeSoftness, 0.0, 1.0);
 
-    // Combine red and blue
-    vec3 color = vec3(red, 0.0, blue);
+    // Compute horizontal blue stripes (centered blend)
+    float yEdge = mod(scaled_uv.y, cycleSize);
+    float blue = clamp((stripeWidth - min(yEdge, cycleSize - yEdge)) / edgeSoftness, 0.0, 1.0);
+
+    // Apply linear interpolation using mix()
+    float redLerp = mix(0.0, 1.0, red);
+    float blueLerp = mix(0.0, 1.0, blue);
+
+    vec3 color = vec3(redLerp, 0.0, blueLerp);
 
     gl_FragColor = vec4(color, 1.0);
 }
