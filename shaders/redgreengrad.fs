@@ -4,37 +4,12 @@ uniform float u_aspect_ratio;
 
 void main()
 {
-    vec2 scaled_uv = v_uv * vec2(u_aspect_ratio, 1.0); // Scale the x-coordinate by the aspect ratio
+    float N = 12.0;
 
-    // Define colors at each corner
-    vec3 color_top_left = vec3(0.0, 1.0, 0.0);  // Green
-    vec3 color_top_right = vec3(1.0, 1.0, 0.0); // Yellow
-    vec3 color_bottom_left = vec3(0.0, 0.0, 0.0); // Black
-    vec3 color_bottom_right = vec3(1.0, 0.0, 0.0); // Red
+    vec2 scaled_uv = v_uv * vec2(u_aspect_ratio, 1.0);
 
-    // Interpolate between bottom colors (black & red)
-    vec3 bottom_mix = mix(color_bottom_left, color_bottom_right, scaled_uv.x);
+    vec2 uvpixel = floor(scaled_uv * N) / N;
+    vec3 color = vec3(uvpixel, 0.0);
     
-    // Interpolate between top colors (green & yellow)
-    vec3 top_mix = mix(color_top_left, color_top_right, scaled_uv.x);
-
-    // Final interpolated gradient
-    vec3 final_color = mix(bottom_mix, top_mix, scaled_uv.y);
-
-    // --- SUBTLE GRID BUMP EFFECT ---
-
-    // Grid resolution (higher values = denser bumps)
-    float grid_size = 20.0;
-
-    // Use sine waves to create soft bumps along rows & columns
-    float column_bump = 0.45 + 0.5 * sin(scaled_uv.x * grid_size * 3.14159);
-    float row_bump = 0.45 + 0.5 * sin(scaled_uv.y * grid_size * 3.14159);
-
-    // Blend the row and column bumps smoothly
-    float bump = (column_bump * row_bump) * 0.15; // Small bump effect
-
-    // Darken the color slightly to create the bump illusion
-    final_color *= (1.0 - bump); 
-
-    gl_FragColor = vec4(final_color, 1.0);
+    gl_FragColor = vec4(color, 1.0);
 }
