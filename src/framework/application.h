@@ -33,6 +33,7 @@ public:
 
 	eTask current_task;
 	int current_subtask;
+    int trans_direction;
 
 	bool occlusions;
 	bool usemeshtext;

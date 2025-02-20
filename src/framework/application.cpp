@@ -40,7 +40,7 @@ void Application::Init(void)
 
 	shader = Shader::Get("shaders/formula.vs", "shaders/redtoblue.fs");
 	texture = Texture::Get("images/fruits.png");
-	
+    trans_direction = 1;
 	mesh->CreateQuad();
 
 }
@@ -51,8 +51,9 @@ void Application::Render(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// Clear the screen
 
 	shader->Enable();
-
+    
 	shader->SetUniform1("u_aspect_ratio", (float)window_width / (float)window_height);
+    shader->SetUniform1("trans_direction", trans_direction);
 
 	shader->SetTexture("u_texture", texture);
 
@@ -116,6 +117,8 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 
 		case SDLK_3:
 			current_task = eTask::TRANSFORMATIONS;
+            current_subtask = 1;
+            shader = Shader::Get("shaders/transformation.vs", "shaders/pixelate.fs");
 			break;
 
 		case SDLK_4:
@@ -128,7 +131,9 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 			}
 			else if (current_task == eTask::FILTERS) {
 				shader = Shader::Get("shaders/filter.vs", "shaders/bnw.fs");
-			}
+            }else if (current_task == eTask::TRANSFORMATIONS){
+                shader = Shader::Get("shaders/transformation.vs", "shaders/pixelate.fs");
+            }
 			break;
 
 		case SDLK_s:
@@ -138,6 +143,9 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 			else if (current_task == eTask::FILTERS) {
 				shader = Shader::Get("shaders/filter.vs", "shaders/inverse.fs");
 			}
+            else if (current_task == eTask::TRANSFORMATIONS) {
+                shader = Shader::Get("shaders/transformation.vs", "shaders/rotate.fs");
+            }
 			break;
 
 		case SDLK_d:
@@ -175,7 +183,22 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 				shader = Shader::Get("shaders/filter.vs", "shaders/blur.fs");
 			}
 			break;
+            
+        case SDLK_LEFT:
+            trans_direction = 1;
 			break;
+        case SDLK_UP:
+            trans_direction = 2;
+            break;
+            
+        case SDLK_RIGHT:
+            trans_direction = 3;
+            break;
+        case SDLK_DOWN:
+            trans_direction = 4;
+            break;
+            
+    
 	}
 }
 

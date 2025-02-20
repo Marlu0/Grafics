@@ -5,7 +5,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <cstring>
-#include <GL\GL.h>
+
 
 Mesh::Mesh()
 {
