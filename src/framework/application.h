@@ -30,6 +30,7 @@ public:
 
 	// Entity and camera
 	Camera camera;
+    Entity** entity;
 
 	eTask current_task;
 	int current_subtask;

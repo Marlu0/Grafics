@@ -7,7 +7,7 @@ void main()
     vec2 scaled_uv = v_uv * vec2(u_aspect_ratio, 1.0); // Scale the x-coordinate by the aspect ratio
     
     // Compute distance from the center (0.5, 0.5)
-    float dist = distance(scaled_uv, vec2(0.5 * u_aspect_ratio, 0.5));
+    float dist = distance(scaled_uv, vec2(0.5, 0.5));
 
     // Map distance to grayscale value (0 at the center, 1 at edges)
     vec3 color = vec3(dist);

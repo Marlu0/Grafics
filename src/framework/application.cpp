@@ -17,7 +17,7 @@ Application::Application(const char* caption, int width, int height)
 	this->window_width = w;
 	this->window_height = h;
 	this->keystate = SDL_GetKeyboardState(nullptr);
-
+    this->entity = (Entity**)malloc(sizeof(Entity*) * 4);
 	this->is_mouse_pressed_left = false;
     this->is_mouse_pressed_right = false;
 	this->occlusions = true;
@@ -33,15 +33,45 @@ Application::~Application()
 void Application::Init(void)
 {
 
-	mesh = new Mesh();
+    
+    Matrix44 M1;
+        M1.Set( 2, 0, 0, 0,
+                0, 2, 0, 0,
+                0, 0, 2, 0,
+                0, 0, 0, 1);
+
+       
+
+        Mesh* mesh1 = new Mesh();
+        mesh1->LoadOBJ("../res/meshes/anna.obj");
+
+
+        camera = Camera();
+        camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
+        camera.SetPerspective(3.14 / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
+
+        Texture* T4 = Texture::Get("../res/textures/anna_color_specular.tga");
+ 
+
+        Shader* entity_shader = Shader::Get("shaders/simple.vs", "shaders/simple.fs");
+        entity[0] = new Entity(mesh1, M1, T4, entity_shader);
+
+
+
+
+       
+    
+    
+    
+
 
 	current_task = eTask::FORMULAS;
 	current_subtask = 1;
 
-	shader = Shader::Get("shaders/formula.vs", "shaders/redtoblue.fs");
-	texture = Texture::Get("images/fruits.png");
+	shader = Shader::Get("shaders/simple.vs", "shaders/simple.fs");
+    texture = T4;
     trans_direction = 1;
-	mesh->CreateQuad();
+
 
 }
 
@@ -49,15 +79,19 @@ void Application::Init(void)
 void Application::Render(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// Clear the screen
-
+    glEnable( GL_DEPTH_TEST );
+    
 	shader->Enable();
     
-	shader->SetUniform1("u_aspect_ratio", (float)window_width/(float)window_height);
-	shader->SetUniform1("u_time", time);
+	shader->SetUniform1("u_aspect_ratio", (float)window_width / (float)window_height);
+    shader->SetUniform1("trans_direction", trans_direction);
+    
+    shader->SetTexture("u_texture", entity[0]->texture);
+    shader->SetMatrix44("u_viewprojection", camera.viewprojection_matrix);
+    shader->SetMatrix44("u_model", entity[0]->modelMatrix);
+	
 
-	shader->SetTexture("u_texture", texture);
-
-	mesh->Render();
+	entity[0]->mesh->Render();
 
 	shader->Disable();
 }

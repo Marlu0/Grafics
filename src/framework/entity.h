@@ -3,6 +3,7 @@
 #include "framework.h"
 #include "mesh.h"
 #include "image.h"
+#include "shader.h"
 
 enum class eRenderMode {
 	POINTCLOUD,
@@ -16,10 +17,10 @@ class Entity
 public:
 	Mesh* mesh;
 	Matrix44 modelMatrix;
-	eRenderMode mode;
-    Image* texture;
+    Texture* texture;
+    Shader* shader;
 
 	Entity(void);
-	Entity(Mesh* mesh_ptr, Matrix44 transform, eRenderMode emode, Image* tex);
-	void Render(Image* framebuffer, FloatImage* zbuffer, Camera* camera, const Color& c, bool occlusion, bool usemeshtext, bool interpolated);
+	Entity(Mesh* mesh_ptr, Matrix44 transform, Texture* tex, Shader* sha);
+	void Render(Camera* camera);
 };
