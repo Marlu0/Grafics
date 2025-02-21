@@ -1,24 +1,25 @@
 // Receive the uvs interpolated from the vertex
 varying vec2 v_uv; 
-uniform int trans_direction;
+
 // Receive the texture as a sampler2D from our application
 uniform sampler2D u_texture; 
+uniform float u_time;
 
 void main()
 {
-	// Fetch sampler
-    vec4 texture_color;
+	// Center coordinates on the center (0.5, 0.5)
+    vec2 corrected_uv = v_uv - vec2(0.5);
     
-    if(trans_direction == 1){
-        texture_color = texture2D( u_texture, vec2(v_uv.y, v_uv.x) );
-    }else if(trans_direction == 2){
-        texture_color = texture2D( u_texture, vec2(v_uv.x,1.0 - v_uv.y) );
-    }else if(trans_direction == 3){
-        
-        texture_color = texture2D( u_texture, vec2(v_uv.y, 1.0 - v_uv.x) );
-    }else if(trans_direction == 4){
-        texture_color = texture2D( u_texture, vec2(v_uv.x, v_uv.y) );
-    }
+    float cosinus = cos(30*u_time*0.0174532925);
+    float sinus = sin(30*u_time*0.0174532925);
+
+    mat2 rotation = mat2(cosinus, -sinus, sinus, cosinus);
+
+    vec2 rot_uv = rotation * corrected_uv;
+
+    rot_uv += vec2(0.5);
+
+    vec4 texture_color = texture2D(u_texture, rot_uv);
 
     // Assign the color to the pixel
 	gl_FragColor = texture_color;

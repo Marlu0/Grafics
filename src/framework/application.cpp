@@ -52,8 +52,8 @@ void Application::Render(void)
 
 	shader->Enable();
     
-	shader->SetUniform1("u_aspect_ratio", (float)window_width / (float)window_height);
-    shader->SetUniform1("trans_direction", trans_direction);
+	shader->SetUniform1("u_aspect_ratio", (float)window_width/(float)window_height);
+	shader->SetUniform1("u_time", time);
 
 	shader->SetTexture("u_texture", texture);
 
