@@ -3,18 +3,18 @@
 Entity::Entity() {
 	mesh = nullptr;
 	modelMatrix.SetIdentity();
+	material = nullptr;
 }
 
-Entity::Entity(Mesh* mesh_ptr, Matrix44 transform, Texture* tex, Shader* sha)
+Entity::Entity(Matrix44 model, Mesh* mesh_ptr, Material* material_ptr)
 {
 	mesh = mesh_ptr;
-	modelMatrix = transform;
-	texture = tex;
-	shader = sha;
+	modelMatrix = model;
+	material = material_ptr;
 }
 
-void Entity::Render(Camera* camera, Shader* shader)
+void Entity::Render(sUniformData uniformData)
 {
-	shader->SetMatrix44("u_model", modelMatrix);
-	shader->SetMatrix44("u_viewprojection", camera->GetViewProjectionMatrix());
+	material->shader->SetMatrix44("u_model", modelMatrix);
+	material->shader->SetMatrix44("u_viewprojection", uniformData.view_projection_matrix);
 }

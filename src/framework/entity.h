@@ -4,6 +4,7 @@
 #include "mesh.h"
 #include "image.h"
 #include "shader.h"
+#include "material.h"
 
 enum class eRenderMode {
 	POINTCLOUD,
@@ -15,12 +16,11 @@ enum class eRenderMode {
 class Entity
 {
 public:
-	Mesh* mesh;
 	Matrix44 modelMatrix;
-	Texture* texture;
-	Shader* shader;
+	Mesh* mesh;
+	Material* material;
 
 	Entity(void);
-	Entity(Mesh* mesh_ptr, Matrix44 transform, Texture* tex, Shader* sha);
-	void Render(Camera* camera, Shader* shader);
+	Entity(Matrix44 model, Mesh* mesh_ptr, Material* material_ptr);
+	void Render(sUniformData uniformData);
 };

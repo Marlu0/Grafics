@@ -70,14 +70,14 @@ void Application::Render(void)
 
 	shader->Enable();
     
-	shader->SetUniform1("u_aspect_ratio", (float)window_width/(float)window_height);
-	shader->SetUniform1("u_time", time);
+	shader->SetFloat("u_aspect_ratio", (float)window_width/(float)window_height);
+	shader->SetFloat("u_time", time);
 
 	shader->SetTexture("u_texture", texture);
 
 	if (current_task == eTask::RENDERMESH)
 	{
-		entity[0]->Render(&camera, shader);
+		entity[0]->Render(uniformData);
 		entity[0]->mesh->Render();
 	}
 

@@ -23,14 +23,15 @@ enum class eTask {
 class Application
 {
 public:
-	
 	Mesh* mesh;
 	Shader* shader;
 	Texture* texture;
+	sUniformData uniformData;
 
 	// Entity and camera
 	Camera camera;
 	Entity** entity;
+	Light* lights;
 
 	eTask current_task;
 	int current_subtask;
