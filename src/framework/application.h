@@ -30,16 +30,10 @@ public:
 
 	// Entity and camera
 	Camera camera;
-    Entity** entity;
+	Entity** entity;
 
 	eTask current_task;
 	int current_subtask;
-    int trans_direction;
-
-	bool occlusions;
-	bool usemeshtext;
-	bool interpolated;
-	bool wireframe;
 
 	// Window
 

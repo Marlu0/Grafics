@@ -17,12 +17,11 @@ Application::Application(const char* caption, int width, int height)
 	this->window_width = w;
 	this->window_height = h;
 	this->keystate = SDL_GetKeyboardState(nullptr);
-    this->entity = (Entity**)malloc(sizeof(Entity*) * 4);
+
 	this->is_mouse_pressed_left = false;
     this->is_mouse_pressed_right = false;
-	this->occlusions = true;
-	this->usemeshtext = true;
 
+	this->entity = (Entity**)calloc(1, sizeof(Entity**));
 	
 }
 
@@ -33,45 +32,33 @@ Application::~Application()
 void Application::Init(void)
 {
 
-    
-    Matrix44 M1;
-        M1.Set( 2, 0, 0, 0,
-                0, 2, 0, 0,
-                0, 0, 2, 0,
-                0, 0, 0, 1);
-
-       
-
-        Mesh* mesh1 = new Mesh();
-        mesh1->LoadOBJ("../res/meshes/anna.obj");
-
-
-        camera = Camera();
-        camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
-        camera.SetPerspective(3.14 / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
-
-        Texture* T4 = Texture::Get("../res/textures/anna_color_specular.tga");
- 
-
-        Shader* entity_shader = Shader::Get("shaders/simple.vs", "shaders/simple.fs");
-        entity[0] = new Entity(mesh1, M1, T4, entity_shader);
-
-
-
-
-       
-    
-    
-    
-
+	mesh = new Mesh();
 
 	current_task = eTask::FORMULAS;
 	current_subtask = 1;
 
-	shader = Shader::Get("shaders/simple.vs", "shaders/simple.fs");
-    texture = T4;
-    trans_direction = 1;
+	shader = Shader::Get("shaders/formula.vs", "shaders/redtoblue.fs");
+	texture = Texture::Get("images/fruits.png");
 
+	mesh->CreateQuad();
+
+	Matrix44 M1;
+	M1.Set(2, 0, 0, 0,
+		0, 2, 0, 0,
+		0, 0, 2, 0,
+		0, 0, 0, 1);
+
+	Mesh* mesh1 = new Mesh();
+	mesh1->LoadOBJ("../res/meshes/anna.obj");
+
+	camera = Camera();
+	camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
+	camera.SetPerspective(3.14 / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
+
+	Texture* T4 = Texture::Get("../res/textures/anna_color_specular.tga");
+
+	Shader* entity_shader = Shader::Get("shaders/simple.vs", "shaders/simple.fs");
+	entity[0] = new Entity(mesh1, M1, T4, entity_shader);
 
 }
 
@@ -79,47 +66,68 @@ void Application::Init(void)
 void Application::Render(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// Clear the screen
-    glEnable( GL_DEPTH_TEST );
-    
+	glEnable(GL_DEPTH_TEST);
+
 	shader->Enable();
     
-	shader->SetUniform1("u_aspect_ratio", (float)window_width / (float)window_height);
-    shader->SetUniform1("trans_direction", trans_direction);
-    
-    shader->SetTexture("u_texture", entity[0]->texture);
-    shader->SetMatrix44("u_viewprojection", camera.viewprojection_matrix);
-    shader->SetMatrix44("u_model", entity[0]->modelMatrix);
-	
+	shader->SetUniform1("u_aspect_ratio", (float)window_width/(float)window_height);
+	shader->SetUniform1("u_time", time);
 
-	entity[0]->mesh->Render();
+	shader->SetTexture("u_texture", texture);
+
+	if (current_task == eTask::RENDERMESH)
+	{
+		entity[0]->Render(&camera, shader);
+		entity[0]->mesh->Render();
+	}
+
+	mesh->Render();
 
 	shader->Disable();
 }
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-	switch (current_task) {
-		case eTask::FORMULAS:
-			
-			break;
-		case eTask::FILTERS:
-			switch (current_subtask) {
-				
-			}
-			break;
+	if (current_task == eTask::RENDERMESH)
+	{
+		if (is_mouse_pressed_left)
+		{
+			float angle = PI / 16 * mouse_delta.x;
+			//float angle_x = PI / 16 * mouse_delta.y;
 
-		case eTask::TRANSFORMATIONS:
-			switch (current_subtask) {
+			Matrix44 first_translate;
+			first_translate.Set(1, 0, 0, -camera.center.x,
+				0, 1, 0, -camera.center.y,
+				0, 0, 1, -camera.center.z,
+				0, 0, 0, 1);
 
-			}
-			break;
+			Matrix44 rotate;
+			rotate.Set(cos(angle), 0, sin(angle), 0,
+				0, 1, 0, 0,
+				-sin(angle), 0, cos(angle), 0,
+				0, 0, 0, 1);
 
-		case eTask::RENDERMESH:
-			switch (current_subtask) {
+			Matrix44 translate;
+			translate.Set(1, 0, 0, camera.center.x,
+				0, 1, 0, camera.center.y,
+				0, 0, 1, camera.center.z,
+				0, 0, 0, 1);
 
-			}
-			break;
-
+			camera.eye = translate * rotate * first_translate * camera.eye;
+			camera.UpdateViewMatrix();
+		}
+		else if (is_mouse_pressed_right)
+		{
+			camera.center.x -= 0.005 * mouse_delta.x;
+			camera.center.y -= 0.005 * mouse_delta.y;
+			camera.UpdateViewMatrix();
+		}
+		else if (is_mouse_pressed_center)
+		{
+			camera.eye.x -= 0.005 * mouse_delta.x;
+			camera.eye.y -= 0.005 * mouse_delta.y;
+			camera.UpdateViewMatrix();
+		}
 	}
 }
 
@@ -140,23 +148,36 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 		case SDLK_1:
 			current_task = eTask::FORMULAS;
 			current_subtask = 1;
+			mesh->Clear();
+			mesh->CreateQuad();
 			shader = Shader::Get("shaders/formula.vs", "shaders/redtoblue.fs");
+			texture = Texture::Get("images/fruits.png");
 			break;
 
 		case SDLK_2:
 			current_task = eTask::FILTERS;
 			current_subtask = 1;
+			mesh->Clear();
+			mesh->CreateQuad();
 			shader = Shader::Get("shaders/filter.vs", "shaders/bnw.fs");
+			texture = Texture::Get("images/fruits.png");
 			break;
 
 		case SDLK_3:
 			current_task = eTask::TRANSFORMATIONS;
             current_subtask = 1;
-            shader = Shader::Get("shaders/transformation.vs", "shaders/pixelate.fs");
+			mesh->Clear();
+			mesh->CreateQuad();
+            shader = Shader::Get("shaders/filter.vs", "shaders/pixelate.fs");
+			texture = Texture::Get("images/fruits.png");
 			break;
 
 		case SDLK_4:
 			current_task = eTask::RENDERMESH;
+			mesh->Clear();
+			mesh->LoadOBJ("../res/meshes/anna.obj");
+			shader = Shader::Get("shaders/simple.vs", "shaders/simple.fs");
+			texture = Texture::Get("../res/textures/anna_color_specular.tga");
 			break;	
 	
 		case SDLK_a:
@@ -166,7 +187,7 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 			else if (current_task == eTask::FILTERS) {
 				shader = Shader::Get("shaders/filter.vs", "shaders/bnw.fs");
             }else if (current_task == eTask::TRANSFORMATIONS){
-                shader = Shader::Get("shaders/transformation.vs", "shaders/pixelate.fs");
+                shader = Shader::Get("shaders/filter.vs", "shaders/pixelate.fs");
             }
 			break;
 
@@ -178,7 +199,7 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 				shader = Shader::Get("shaders/filter.vs", "shaders/inverse.fs");
 			}
             else if (current_task == eTask::TRANSFORMATIONS) {
-                shader = Shader::Get("shaders/transformation.vs", "shaders/rotate.fs");
+                shader = Shader::Get("shaders/filter.vs", "shaders/rotate.fs");
             }
 			break;
 
@@ -216,22 +237,7 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 			else if (current_task == eTask::FILTERS) {
 				shader = Shader::Get("shaders/filter.vs", "shaders/blur.fs");
 			}
-			break;
-            
-        case SDLK_LEFT:
-            trans_direction = 1;
-			break;
-        case SDLK_UP:
-            trans_direction = 2;
-            break;
-            
-        case SDLK_RIGHT:
-            trans_direction = 3;
-            break;
-        case SDLK_DOWN:
-            trans_direction = 4;
-            break;
-            
+			break;        
     
 	}
 }
@@ -271,7 +277,7 @@ void Application::OnWheel(SDL_MouseWheelEvent event)
 
         viewDir.Normalize();
         
-        float zoomAmount = event.preciseY * 0.1f;
+        float zoomAmount = event.preciseY * 0.05f;
         float minDistance = 0.2f;
                 
         float newDistance = currentDistance - zoomAmount;

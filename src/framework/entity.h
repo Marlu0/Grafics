@@ -17,10 +17,10 @@ class Entity
 public:
 	Mesh* mesh;
 	Matrix44 modelMatrix;
-    Texture* texture;
-    Shader* shader;
+	Texture* texture;
+	Shader* shader;
 
 	Entity(void);
 	Entity(Mesh* mesh_ptr, Matrix44 transform, Texture* tex, Shader* sha);
-	void Render(Camera* camera);
+	void Render(Camera* camera, Shader* shader);
 };
