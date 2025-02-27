@@ -21,8 +21,7 @@ Application::Application(const char* caption, int width, int height)
 	this->is_mouse_pressed_left = false;
     this->is_mouse_pressed_right = false;
 
-	this->entity = (Entity**)calloc(1, sizeof(Entity**));
-	this->lights = (Light*)calloc(1, sizeof(Light*));
+	this->lights = (sLight*)calloc(3, sizeof(sLight));
 }
 
 Application::~Application()
@@ -31,79 +30,101 @@ Application::~Application()
 
 void Application::Init(void)
 {
-	current_scene = eScene::LAB4;
-
+	// Initialize Quad for Lab4
 	shader = Shader::Get("shaders/redtoblue.vs", "shaders/redtoblue.fs");
 	texture = Texture::Get("images/fruits.png");
-
-	lights[0].intensity = Vector3(1.0, 1.0, 1.0);
-	lights[0].position = Vector3(0.0, 2.0, 0.0);
-
-	entity[0]->mesh->CreateQuad();
-	entity[0]->modelMatrix.SetIdentity();
-
-	entity[1]->mesh->LoadOBJ("meshes/anna.obj");
-	entity[1]->modelMatrix.Set(	1, 0, 0, 0,
-								0, 1, 0, 0
-								0, 0, 1, 0
-								0, 0, 0, 1);
-	Material skin_anna;
-	skin_anna.Ka = Vector3(1.0, 1.0, 1.0);
-	skin_anna.Kd = Vector3(1.0, 1.0, 1.0);
-	skin_anna.Ks = Vector3(1.0, 1.0, 1.0);
-	skin_anna.shader = Shader::Get("shaders/simple.vs", "shaders/simple.fs");
-	skin_anna.shininess = 0.1;
-	skin_anna.texture = Texture::Get("textures/anna_color_specular.tga");
-
-	entity[1]->material = &skin_anna;
-
+	mesh = new Mesh();
+	mesh->CreateQuad();
+	
+	// Initialize flags
+	current_scene = eScene::LAB4;
 	current_task = eTask::FORMULAS;
 	current_subtask = 1;
+	active_lights = 1;
 
+	// Initialize camera
 	camera = Camera();
 	camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
-	camera.SetPerspective(3.14 / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
+	camera.SetPerspective(3.14 / 2, 1.6, 0.1f, 10.0f);
 
+	// Initialize lights
+	lights[0].intensity = Vector3(1.0, 1.0, 1.0); lights[0].position = Vector3(-1.0, 0.0, 0.0);
+	lights[1].intensity = Vector3(1.0, 1.0, 1.0); lights[1].position = Vector3(1.0, 0.0, 0.0);
+	lights[2].intensity = Vector3(1.0, 1.0, 1.0); lights[2].position = Vector3(0.0, 1.0, 0.0);
+
+	// Initialize entity
+	entity.mesh->LoadOBJ("../res/meshes/anna.obj");
+	entity.modelMatrix.Set(1.0, 0.0, 0.0, 0.0,
+							0.0, 1.0, 0.0, 0.0,
+							0.0, 0.0, 1.0, 0.0,
+							0.0, 0.0, 0.0, 1.0);
+	
+	Material anna_material;
+	anna_material.Ka = Vector3(0.5, 0.5, 0.5);
+	anna_material.Kd = Vector3(0.5, 0.5, 0.5);
+	anna_material.Ks = Vector3(0.5, 0.5, 0.5);
+
+	anna_material.shader = Shader::Get("shaders/simple.vs", "shaders/simple.fs");
+	anna_material.texture = Texture::Get("textures/anna_specular.tga");
+	anna_material.shininess = 0.5;
+
+	entity.material = anna_material;
+
+	// uniformData initialization
+	uniformData.ambient_light = Vector3(1.0, 1.0, 1.0);
+	uniformData.aspect_ratio = (float)window_width / (float)window_height;
+	uniformData.light = lights[0];
+	uniformData.model = entity.modelMatrix;
+	uniformData.time = time;
+	uniformData.view_projection_matrix = camera.GetViewProjectionMatrix();
 }
 
 // Render one frame
 void Application::Render(void)
 {
-	if (current_task == eTask::RENDERMESH) {
-
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// Clear the screen
-		glEnable(GL_DEPTH_TEST);
-
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// Clear the screen
+	glEnable(GL_DEPTH_TEST);
+	
+	if (current_scene == eScene::LAB5)
+	{
 		this->uniformData.aspect_ratio = (float)window_width / (float)window_height;
 		this->uniformData.time = time;
 
 		this->uniformData.light = lights[0];
 
-		for (int i = 1; i < NUM_ENTITIES; i++)
+		glDepthFunc(GL_LEQUAL);
+		glDisable(GL_BLEND);
+
+		entity.Render(uniformData);
+
+		for (int i = 1; i < active_lights; i++)
 		{
-			glDepthFunc(GL_LEQUAL);
-			glDisable(GL_BLEND);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE, GL_ONE);
 
-			entity[i]->Render(uniformData);
+			this->uniformData.light = lights[i];
 
-			for (int j = 1; j < NUM_LIGHTS; j++) {
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_ONE, GL_ONE);
-
-				this->uniformData.light = lights[j];
-
-				entity[i]->Render(uniformData);
-			}
+			entity.Render(uniformData);
 		}
 	}
-	else {
-		entity[0]->Render(uniformData);
+	else
+	{
+		shader->Enable();
+
+		shader->SetUniform1("u_aspect_ratio", (float)window_width / (float)window_height);
+		shader->SetUniform1("u_time", time);
+
+		shader->SetTexture("u_texture", texture);
+
+		mesh->Render();
+
+		shader->Disable();
 	}
 }
 // Called after render
 void Application::Update(float seconds_elapsed)
 {
-	if (current_task == eTask::RENDERMESH)
+	if (current_scene == eScene::LAB5)
 	{
 		if (is_mouse_pressed_left)
 		{
@@ -153,28 +174,27 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 	switch (event.keysym.sym) {
 		case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
 
-		case SDLK_r:
-			camera = Camera();
-			camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
-			camera.SetPerspective(PI / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
-			camera.UpdateViewMatrix();
-			break;
-
 		case SDLK_1:
-			current_task = eTask::FORMULAS;
-			current_subtask = 1;
+			if (current_scene == eScene::LAB4) {
+				current_task = eTask::FORMULAS;
+				current_subtask = 1;
 
-			shader = Shader::Get("shaders/formula.vs", "shaders/redtoblue.fs");
-			texture = Texture::Get("images/fruits.png");
+				shader = Shader::Get("shaders/formula.vs", "shaders/redtoblue.fs");
+				texture = Texture::Get("images/fruits.png");
+			}
+			else active_lights = 1;
 
 			break;
 
 		case SDLK_2:
-			current_task = eTask::FILTERS;
-			current_subtask = 1;
+			if (current_scene == eScene::LAB4) {
+				current_task = eTask::FILTERS;
+				current_subtask = 1;
 
-			shader = Shader::Get("shaders/filter.vs", "shaders/bnw.fs");
-			texture = Texture::Get("images/fruits.png");
+				shader = Shader::Get("shaders/filter.vs", "shaders/bnw.fs");
+				texture = Texture::Get("images/fruits.png");
+			}
+			else active_lights = 2;
 
 			break;
 
@@ -187,13 +207,16 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 				shader = Shader::Get("shaders/filter.vs", "shaders/pixelate.fs");
 				texture = Texture::Get("images/fruits.png");
 			}
+			else active_lights = 3;
 
+			break;	
+
+		case SDLK_l:
+			if (current_scene == eScene::LAB4) {
+				current_scene = eScene::LAB5;
+			} else current_scene = eScene::LAB4;
 			break;
 
-		case SDLK_4:
-			current_task = eTask::RENDERMESH;
-			break;	
-	
 		case SDLK_a:
 			if (current_task == eTask::FORMULAS) {
 				shader = Shader::Get("shaders/formula.vs", "shaders/redtoblue.fs");
@@ -206,15 +229,20 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 			break;
 
 		case SDLK_s:
-			if (current_task == eTask::FORMULAS) {
-				shader = Shader::Get("shaders/formula.vs", "shaders/pointfade.fs");
+			if (current_scene == eScene::LAB4) {
+				if (current_task == eTask::FORMULAS) {
+					shader = Shader::Get("shaders/formula.vs", "shaders/pointfade.fs");
+				}
+				else if (current_task == eTask::FILTERS) {
+					shader = Shader::Get("shaders/filter.vs", "shaders/inverse.fs");
+				}
+				else if (current_task == eTask::TRANSFORMATIONS) {
+					shader = Shader::Get("shaders/filter.vs", "shaders/rotate.fs");
+				}
 			}
-			else if (current_task == eTask::FILTERS) {
-				shader = Shader::Get("shaders/filter.vs", "shaders/inverse.fs");
+			else {
+				// Toggle between specular or not
 			}
-            else if (current_task == eTask::TRANSFORMATIONS) {
-                shader = Shader::Get("shaders/filter.vs", "shaders/rotate.fs");
-            }
 			break;
 
 		case SDLK_d:
@@ -251,8 +279,18 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 			else if (current_task == eTask::FILTERS) {
 				shader = Shader::Get("shaders/filter.vs", "shaders/blur.fs");
 			}
-			break;        
-    
+			break;  
+
+		case SDLK_r:
+			camera = Camera();
+			camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
+			camera.SetPerspective(PI / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
+			camera.UpdateViewMatrix();
+			break;
+
+		case SDLK_n:
+			// Toggle between using normal or not
+			break;
 	}
 }
 
@@ -309,21 +347,4 @@ void Application::OnWheel(SDL_MouseWheelEvent event)
 void Application::OnFileChanged(const char* filename)
 { 
 	Shader::ReloadSingleShader(filename);
-}
-
-void Application::moveHarmonic(Entity* entity, float time, float speed, Vector3 axis)
-{
-	entity->modelMatrix.Translate(axis.x * 0.02 * sin(speed * time * 2 * PI), axis.y * 0.02 * sin(speed * time * 2 * PI), axis.z * 0.02 * sin(speed * time * 2 * PI));
-}
-
-void Application::rotateEntity(Entity* entity, float seconds_elapsed, float speed, Vector3 axis) 
-{
-	entity->modelMatrix.RotateLocal(seconds_elapsed * speed, axis);
-}
-
-void Application::scaleEntity(Entity* entity, float time, float speed, Vector3 axis)
-{
-	entity->modelMatrix.M[0][0] = abs(axis.x*cos(time * speed));
-	entity->modelMatrix.M[1][1] = abs(axis.y*cos(time * speed));
-	entity->modelMatrix.M[2][2] = abs(axis.z*cos(time * speed));
 }

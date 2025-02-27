@@ -5,19 +5,19 @@
 #include "shader.h"
 #include "texture.h"
 
+typedef struct sLight {
+	Vector3 position;
+	Vector3 intensity;
+}sLight;
+
 typedef struct sUniformData {
 	Matrix44 model;
 	Matrix44 view_projection_matrix;
 	Vector3 ambient_light;
-	Light light;
+	sLight light;
 	float aspect_ratio;
 	float time;
-};
-
-typedef struct sLight {
-	Vector3 position;
-	Vector3 intensity;
-} Light;
+} sUniformData;
 
 class Material
 {

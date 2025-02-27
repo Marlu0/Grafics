@@ -18,9 +18,9 @@ class Entity
 public:
 	Matrix44 modelMatrix;
 	Mesh* mesh;
-	Material* material;
+	Material material;
 
 	Entity(void);
-	Entity(Matrix44 model, Mesh* mesh_ptr, Material* material_ptr);
+	Entity(Matrix44 model, Mesh* mesh_ptr, Material imaterial);
 	void Render(sUniformData uniformData);
 };

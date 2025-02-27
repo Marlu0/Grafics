@@ -10,10 +10,6 @@
 #include "entity.h"
 #include "shader.h"
 
-
-#define NUM_ENTITIES 4
-#define NUM_LIGHTS 1
-
 enum class eScene {
 	LAB4,
 	LAB5
@@ -22,29 +18,28 @@ enum class eScene {
 enum class eTask {
 	FORMULAS,
 	FILTERS,
-	TRANSFORMATIONS,
-	RENDERMESH
+	TRANSFORMATIONS
 };
 
 class Application
 {
 public:
-	sUniformData uniformData;
+	eScene current_scene;
+	eTask current_task;
+	int current_subtask;
 
-	// LAB4
+	sUniformData uniformData;
+	Camera camera;
+	
+	// LAB 4
 	Shader* shader;
 	Texture* texture;
 	Mesh* mesh;
 
-	//LAB5
-	// Entity and camera
-	Camera camera;
-	Entity** entity;
-	Light* lights;
-
-	eScene current_scene;
-	eTask current_task;
-	int current_subtask;
+	// LAB 5	
+	Entity entity;
+	sLight* lights;
+	int active_lights;
 
 	// Window
 
@@ -93,8 +88,4 @@ public:
 		SDL_GetWindowSize(window,&w,&h);
 		return Vector2(float(w), float(h));
 	}
-
-	void moveHarmonic(Entity* entity, float time, float speed, Vector3 axis);
-	void rotateEntity(Entity* entity, float seconds_elapsed, float speed, Vector3 axis);
-	void scaleEntity(Entity* entity, float time, float speed, Vector3 axis);
 };
