@@ -11,7 +11,13 @@
 #include "shader.h"
 
 
-#define NUMENTITIES 4
+#define NUM_ENTITIES 4
+#define NUM_LIGHTS 1
+
+enum class eScene {
+	LAB4,
+	LAB5
+};
 
 enum class eTask {
 	FORMULAS,
@@ -23,16 +29,20 @@ enum class eTask {
 class Application
 {
 public:
-	Mesh* mesh;
-	Shader* shader;
-	Texture* texture;
 	sUniformData uniformData;
 
+	// LAB4
+	Shader* shader;
+	Texture* texture;
+	Mesh* mesh;
+
+	//LAB5
 	// Entity and camera
 	Camera camera;
 	Entity** entity;
 	Light* lights;
 
+	eScene current_scene;
 	eTask current_task;
 	int current_subtask;
 

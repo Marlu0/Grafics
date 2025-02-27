@@ -10,6 +10,8 @@ typedef struct sUniformData {
 	Matrix44 view_projection_matrix;
 	Vector3 ambient_light;
 	Light light;
+	float aspect_ratio;
+	float time;
 };
 
 typedef struct sLight {
@@ -21,7 +23,7 @@ class Material
 {
 public:
 	Shader* shader;
-	Texture texture;
+	Texture* texture;
 	Vector3 Ka;
 	Vector3 Kd;
 	Vector3 Ks;

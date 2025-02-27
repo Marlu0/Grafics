@@ -22,7 +22,7 @@ Application::Application(const char* caption, int width, int height)
     this->is_mouse_pressed_right = false;
 
 	this->entity = (Entity**)calloc(1, sizeof(Entity**));
-	
+	this->lights = (Light*)calloc(1, sizeof(Light*));
 }
 
 Application::~Application()
@@ -31,59 +31,74 @@ Application::~Application()
 
 void Application::Init(void)
 {
+	current_scene = eScene::LAB4;
 
-	mesh = new Mesh();
+	shader = Shader::Get("shaders/redtoblue.vs", "shaders/redtoblue.fs");
+	texture = Texture::Get("images/fruits.png");
+
+	lights[0].intensity = Vector3(1.0, 1.0, 1.0);
+	lights[0].position = Vector3(0.0, 2.0, 0.0);
+
+	entity[0]->mesh->CreateQuad();
+	entity[0]->modelMatrix.SetIdentity();
+
+	entity[1]->mesh->LoadOBJ("meshes/anna.obj");
+	entity[1]->modelMatrix.Set(	1, 0, 0, 0,
+								0, 1, 0, 0
+								0, 0, 1, 0
+								0, 0, 0, 1);
+	Material skin_anna;
+	skin_anna.Ka = Vector3(1.0, 1.0, 1.0);
+	skin_anna.Kd = Vector3(1.0, 1.0, 1.0);
+	skin_anna.Ks = Vector3(1.0, 1.0, 1.0);
+	skin_anna.shader = Shader::Get("shaders/simple.vs", "shaders/simple.fs");
+	skin_anna.shininess = 0.1;
+	skin_anna.texture = Texture::Get("textures/anna_color_specular.tga");
+
+	entity[1]->material = &skin_anna;
 
 	current_task = eTask::FORMULAS;
 	current_subtask = 1;
 
-	shader = Shader::Get("shaders/formula.vs", "shaders/redtoblue.fs");
-	texture = Texture::Get("images/fruits.png");
-
-	mesh->CreateQuad();
-
-	Matrix44 M1;
-	M1.Set(2, 0, 0, 0,
-		0, 2, 0, 0,
-		0, 0, 2, 0,
-		0, 0, 0, 1);
-
-	Mesh* mesh1 = new Mesh();
-	mesh1->LoadOBJ("../res/meshes/anna.obj");
-
 	camera = Camera();
 	camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
 	camera.SetPerspective(3.14 / 2, 1.6, 0.1f, 10.0f);  // Adjust near/far planes
-
-	Texture* T4 = Texture::Get("../res/textures/anna_color_specular.tga");
-
-	Shader* entity_shader = Shader::Get("shaders/simple.vs", "shaders/simple.fs");
-	entity[0] = new Entity(mesh1, M1, T4, entity_shader);
 
 }
 
 // Render one frame
 void Application::Render(void)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// Clear the screen
-	glEnable(GL_DEPTH_TEST);
+	if (current_task == eTask::RENDERMESH) {
 
-	shader->Enable();
-    
-	shader->SetFloat("u_aspect_ratio", (float)window_width/(float)window_height);
-	shader->SetFloat("u_time", time);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// Clear the screen
+		glEnable(GL_DEPTH_TEST);
 
-	shader->SetTexture("u_texture", texture);
+		this->uniformData.aspect_ratio = (float)window_width / (float)window_height;
+		this->uniformData.time = time;
 
-	if (current_task == eTask::RENDERMESH)
-	{
-		entity[0]->Render(uniformData);
-		entity[0]->mesh->Render();
+		this->uniformData.light = lights[0];
+
+		for (int i = 1; i < NUM_ENTITIES; i++)
+		{
+			glDepthFunc(GL_LEQUAL);
+			glDisable(GL_BLEND);
+
+			entity[i]->Render(uniformData);
+
+			for (int j = 1; j < NUM_LIGHTS; j++) {
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_ONE, GL_ONE);
+
+				this->uniformData.light = lights[j];
+
+				entity[i]->Render(uniformData);
+			}
+		}
 	}
-
-	mesh->Render();
-
-	shader->Disable();
+	else {
+		entity[0]->Render(uniformData);
+	}
 }
 // Called after render
 void Application::Update(float seconds_elapsed)
@@ -148,36 +163,35 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 		case SDLK_1:
 			current_task = eTask::FORMULAS;
 			current_subtask = 1;
-			mesh->Clear();
-			mesh->CreateQuad();
+
 			shader = Shader::Get("shaders/formula.vs", "shaders/redtoblue.fs");
 			texture = Texture::Get("images/fruits.png");
+
 			break;
 
 		case SDLK_2:
 			current_task = eTask::FILTERS;
 			current_subtask = 1;
-			mesh->Clear();
-			mesh->CreateQuad();
+
 			shader = Shader::Get("shaders/filter.vs", "shaders/bnw.fs");
 			texture = Texture::Get("images/fruits.png");
+
 			break;
 
 		case SDLK_3:
-			current_task = eTask::TRANSFORMATIONS;
-            current_subtask = 1;
-			mesh->Clear();
-			mesh->CreateQuad();
-            shader = Shader::Get("shaders/filter.vs", "shaders/pixelate.fs");
-			texture = Texture::Get("images/fruits.png");
+
+			if (current_scene == eScene::LAB4) {
+				current_task = eTask::TRANSFORMATIONS;
+				current_subtask = 1;
+
+				shader = Shader::Get("shaders/filter.vs", "shaders/pixelate.fs");
+				texture = Texture::Get("images/fruits.png");
+			}
+
 			break;
 
 		case SDLK_4:
 			current_task = eTask::RENDERMESH;
-			mesh->Clear();
-			mesh->LoadOBJ("../res/meshes/anna.obj");
-			shader = Shader::Get("shaders/simple.vs", "shaders/simple.fs");
-			texture = Texture::Get("../res/textures/anna_color_specular.tga");
 			break;	
 	
 		case SDLK_a:
