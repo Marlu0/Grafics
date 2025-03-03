@@ -37,46 +37,54 @@ void Application::Init(void)
 	mesh->CreateQuad();
 	
 	// Initialize flags
-	current_scene = eScene::LAB4;
+	current_scene = eScene::LAB5;
 	current_task = eTask::FORMULAS;
 	current_subtask = 1;
 	active_lights = 1;
 
 	// Initialize camera
 	camera = Camera();
-	camera.LookAt(Vector3(0, 1, 3), Vector3(0, 0, 0), Vector3(0, 1, 0));
+	camera.LookAt(Vector3(0, 0.5, 1), Vector3(0, 0, 0), Vector3(0, 1, 0));
 	camera.SetPerspective(3.14 / 2, 1.6, 0.1f, 10.0f);
 
 	// Initialize lights
-	lights[0].intensity = Vector3(1.0, 1.0, 1.0); lights[0].position = Vector3(-1.0, 0.0, 0.0);
+	lights[0].intensity = Vector3(2, 2, 2); lights[0].position = Vector3(0, 0.5, 0.5);
 	lights[1].intensity = Vector3(1.0, 1.0, 1.0); lights[1].position = Vector3(1.0, 0.0, 0.0);
 	lights[2].intensity = Vector3(1.0, 1.0, 1.0); lights[2].position = Vector3(0.0, 1.0, 0.0);
 
 	// Initialize entity
-	entity.mesh->LoadOBJ("../res/meshes/anna.obj");
-	entity.modelMatrix.Set(1.0, 0.0, 0.0, 0.0,
-							0.0, 1.0, 0.0, 0.0,
-							0.0, 0.0, 1.0, 0.0,
-							0.0, 0.0, 0.0, 1.0);
-	
+    entity = Entity();
+    Mesh* mesh = new Mesh();
+    mesh->LoadOBJ("meshes/anna.obj");
+    Matrix44 M1;
+    M1.Set(1.0, 0.0, 0.0, 0.0,
+           0.0, 1.0, 0.0, 0.0,
+           0.0, 0.0, 1.0, 0.0,
+           0.0, 0.0, 0.0, 1.0);
+    
 	Material anna_material;
-	anna_material.Ka = Vector3(0.5, 0.5, 0.5);
-	anna_material.Kd = Vector3(0.5, 0.5, 0.5);
-	anna_material.Ks = Vector3(0.5, 0.5, 0.5);
+	anna_material.Ka = Vector3(1, 1, 1);
+	anna_material.Kd = Vector3(0.7, 0.7, 0.7);
+	anna_material.Ks = Vector3(0.8, 0.8, 0.8);
 
-	anna_material.shader = Shader::Get("shaders/simple.vs", "shaders/simple.fs");
-	anna_material.texture = Texture::Get("textures/anna_specular.tga");
-	anna_material.shininess = 0.5;
+    Shader* sha = Shader::Get("shaders/gouraud.vs", "shaders/gouraud.fs");
+	anna_material.shader = sha;
+   
+    Texture* tex = Texture::Get("textures/anna_color_specular.tga");
+    anna_material.texture = tex;
+	anna_material.shininess = 20;
 
-	entity.material = anna_material;
+    entity = Entity(M1, mesh, anna_material);
 
 	// uniformData initialization
-	uniformData.ambient_light = Vector3(1.0, 1.0, 1.0);
+	uniformData.ambient_light = Vector3(0.1, 0.1,  0.1);
 	uniformData.aspect_ratio = (float)window_width / (float)window_height;
 	uniformData.light = lights[0];
 	uniformData.model = entity.modelMatrix;
 	uniformData.time = time;
-	uniformData.view_projection_matrix = camera.GetViewProjectionMatrix();
+    uniformData.camera = &camera;
+    uniformData.first_light_rendered = 0;
+    
 }
 
 // Render one frame
@@ -95,8 +103,12 @@ void Application::Render(void)
 		glDepthFunc(GL_LEQUAL);
 		glDisable(GL_BLEND);
 
+        
+        
 		entity.Render(uniformData);
-
+        
+        uniformData.first_light_rendered = 1;
+        
 		for (int i = 1; i < active_lights; i++)
 		{
 			glEnable(GL_BLEND);
@@ -106,6 +118,7 @@ void Application::Render(void)
 
 			entity.Render(uniformData);
 		}
+        uniformData.first_light_rendered = 0;
 	}
 	else
 	{
