@@ -22,6 +22,7 @@ typedef struct sUniformData {
     //Vector3 camera_position;
     Camera* camera;
     int first_light_rendered;
+    int is_normal_activated;
     
 } sUniformData;
 
@@ -31,6 +32,7 @@ class Material
 public:
 	Shader* shader;
 	Texture* texture;
+    Texture* normals;
 	Vector3 Ka;
 	Vector3 Kd;
 	Vector3 Ks;

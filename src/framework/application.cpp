@@ -48,8 +48,8 @@ void Application::Init(void)
 	camera.SetPerspective(3.14 / 2, 1.6, 0.1f, 10.0f);
 
 	// Initialize lights
-	lights[0].intensity = Vector3(2, 2, 2); lights[0].position = Vector3(0, 0.5, 0.5);
-	lights[1].intensity = Vector3(1.0, 1.0, 1.0); lights[1].position = Vector3(1.0, 0.0, 0.0);
+	lights[0].intensity = Vector3(0.3, 0.3, 0.3); lights[0].position = Vector3(0, 0.5, 0.5);
+	lights[1].intensity = Vector3(0.5, 0.5, 0.5); lights[1].position = Vector3(1.0, 0.0, 0.0);
 	lights[2].intensity = Vector3(1.0, 1.0, 1.0); lights[2].position = Vector3(0.0, 1.0, 0.0);
 
 	// Initialize entity
@@ -72,7 +72,11 @@ void Application::Init(void)
    
     Texture* tex = Texture::Get("textures/anna_color_specular.tga");
     anna_material.texture = tex;
-	anna_material.shininess = 20;
+    
+    Texture* norm = Texture::Get("textures/anna_normal.tga");
+    anna_material.normals = norm;
+    
+	anna_material.shininess = 4;
 
     entity = Entity(M1, mesh, anna_material);
 
@@ -84,6 +88,7 @@ void Application::Init(void)
 	uniformData.time = time;
     uniformData.camera = &camera;
     uniformData.first_light_rendered = 0;
+    uniformData.is_normal_activated = 0;
     
 }
 
@@ -111,13 +116,15 @@ void Application::Render(void)
         
 		for (int i = 1; i < active_lights; i++)
 		{
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_ONE, GL_ONE);
-
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_ONE, GL_ONE);
+            
 			this->uniformData.light = lights[i];
 
 			entity.Render(uniformData);
+            glDisable(GL_BLEND);
 		}
+        
         uniformData.first_light_rendered = 0;
 	}
 	else
@@ -277,13 +284,34 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 			break;
 
 		case SDLK_g:
-			if (current_task == eTask::FORMULAS) {
-				shader = Shader::Get("shaders/formula.vs", "shaders/chess.fs");
-			}
-			else if (current_task == eTask::FILTERS) {
-				shader = Shader::Get("shaders/filter.vs", "shaders/vignette.fs");
-			}
+            if(current_scene == eScene::LAB4){
+                if (current_task == eTask::FORMULAS) {
+                    shader = Shader::Get("shaders/formula.vs", "shaders/chess.fs");
+                }
+                else if (current_task == eTask::FILTERS) {
+                    shader = Shader::Get("shaders/filter.vs", "shaders/vignette.fs");
+                }
+            }
+            else if(current_scene == eScene::LAB5){
+                entity.material.shader = Shader::Get("shaders/gouraud.vs", "shaders/gouraud.fs");
+            }
 			break;
+            
+        case SDLK_p:
+            if(current_scene == eScene::LAB5){
+                entity.material.shader = Shader::Get("shaders/phong.vs", "shaders/phong.fs");
+            }
+            break;
+            
+        case SDLK_n:
+            if(current_scene == eScene::LAB5){
+                if (uniformData.is_normal_activated == 1){
+                    uniformData.is_normal_activated = 0;
+                }else{
+                    uniformData.is_normal_activated = 1;
+                }
+            }
+            break;
 
 		case SDLK_h:
 			if (current_task == eTask::FORMULAS) {
@@ -301,9 +329,6 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 			camera.UpdateViewMatrix();
 			break;
 
-		case SDLK_n:
-			// Toggle between using normal or not
-			break;
 	}
 }
 
