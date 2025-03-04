@@ -88,6 +88,8 @@ void Application::Init(void)
 	uniformData.time = time;
     uniformData.camera = &camera;
     uniformData.first_light_rendered = 0;
+	uniformData.is_colortext_activated = 1;
+	uniformData.is_specular_activated = 1;
     uniformData.is_normal_activated = 0;
     
 }
@@ -260,8 +262,13 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
 					shader = Shader::Get("shaders/filter.vs", "shaders/rotate.fs");
 				}
 			}
-			else {
-				// Toggle between specular or not
+			else if (current_scene == eScene::LAB5) {
+				if (uniformData.is_specular_activated == 1) {
+					uniformData.is_specular_activated = 0;
+				}
+				else {
+					uniformData.is_specular_activated = 1;
+				}
 			}
 			break;
 
@@ -312,6 +319,17 @@ void Application::OnKeyPressed(SDL_KeyboardEvent event)
                 }
             }
             break;
+
+		case SDLK_c:
+			if (current_scene == eScene::LAB5) {
+				if (uniformData.is_colortext_activated == 1) {
+					uniformData.is_colortext_activated = 0;
+				}
+				else {
+					uniformData.is_colortext_activated = 1;
+				}
+			}
+			break;
 
 		case SDLK_h:
 			if (current_task == eTask::FORMULAS) {

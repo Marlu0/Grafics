@@ -1,5 +1,7 @@
 varying vec2 v_uv;
 uniform int u_is_first_entity_rendered;
+uniform int u_is_colortext_activated;
+uniform int u_is_specular_activated;
 uniform vec3 u_material_Ka;
 uniform vec3 u_material_Kd;
 uniform vec3 u_material_Ks;
@@ -15,8 +17,6 @@ uniform vec3 u_camera_position;
 
 varying vec3 v_world_position;
 varying vec3 v_world_normal;
-
-
 
 
 void main()
@@ -36,7 +36,16 @@ void main()
     vec3 specular = intensity_at_point * u_material_Ks * pow(clamp(dot(R, V), 0.0, 1.0), u_shininess);
 
     if (u_is_first_entity_rendered == 0) {
-        total = vec4(ambient + diffuse + specular, 1.0);
+        if (u_is_colortext_activated == 0 && u_is_specular_activated == 0){
+            total = vec4(ambient, 1.0);
+        } else if (u_is_colortext_activated == 0){
+            total = vec4(ambient + specular, 1.0);
+        } else if (u_is_specular_activated == 0){
+            total = vec4(ambient + diffuse, 1.0);
+        } else {
+            total = vec4(ambient + diffuse + specular, 1.0);
+        }
+        
     } else {
         total = vec4(diffuse + specular, 1.0);
     }

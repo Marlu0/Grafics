@@ -34,7 +34,9 @@ void Entity::Render(sUniformData uniformData)
     material.shader->SetUniform1("u_is_first_entity_rendered", uniformData.first_light_rendered);
     
     material.shader->SetUniform1("u_is_normal_activated", uniformData.is_normal_activated);
-    
+	material.shader->SetUniform1("u_is_colortext_activated", uniformData.is_colortext_activated);
+	material.shader->SetUniform1("u_is_specular_activated", uniformData.is_specular_activated);
+
     material.shader->SetTexture("u_normals", material.normals);
 
 	mesh->Render();

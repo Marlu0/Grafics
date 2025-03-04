@@ -23,6 +23,8 @@ typedef struct sUniformData {
     Camera* camera;
     int first_light_rendered;
     int is_normal_activated;
+	int is_colortext_activated;
+	int is_specular_activated;
     
 } sUniformData;
 
